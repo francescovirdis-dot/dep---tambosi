@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diritto e Economia Politica — ITE Tambosi</title>
+<style>
+:root{
+  --navy:#1A2340;--teal:#2DC5A2;--gold:#C9A84C;--slate:#3D5166;
+  --light:#E8F4F1;--bg:#F5F7FA;--white:#FFFFFF;--gray:#8A96A3;
+  --text:#222222;--err:#C0392B;--ok:#1A7A4A;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+#header{background:var(--navy);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+#header h1{color:var(--white);font-size:.95rem;font-weight:700;letter-spacing:.03em;}
+#header-info{color:var(--teal);font-size:.82rem;}
+
+/* STEPPER */
+#stepper{background:var(--white);border-bottom:2px solid var(--light);padding:12px 20px;display:flex;align-items:center;overflow-x:auto;position:sticky;top:49px;z-index:99;}
+.step-item{display:flex;align-items:center;}
+.step-btn{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:3px 7px;cursor:not-allowed;}
+.step-btn.ok,.step-btn.curr{cursor:pointer;}
+.step-btn.curr{cursor:default;}
+.step-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;border:2px solid #CDD1D9;color:var(--gray);background:var(--white);transition:all .2s;}
+.step-btn.ok .step-circle{background:var(--teal);border-color:var(--teal);color:var(--white);}
+.step-btn.curr .step-circle{background:var(--navy);border-color:var(--navy);color:var(--white);}
+.step-label{font-size:.6rem;color:var(--gray);white-space:nowrap;}
+.step-btn.curr .step-label{color:var(--navy);font-weight:700;}
+.step-btn.ok .step-label{color:var(--teal);}
+.step-conn{width:20px;height:2px;background:#DDE1E7;flex-shrink:0;}
+.step-conn.done{background:var(--teal);}
+
+/* PROGRESS */
+#pbar-wrap{height:4px;background:#E0E4EA;overflow:hidden;}
+#pbar{height:100%;background:var(--teal);transition:width .6s;}
+
+/* MAIN */
+#main{max-width:800px;margin:0 auto;padding:24px 16px 100px;}
+
+/* CARD */
+.card{background:var(--white);border-radius:12px;box-shadow:0 2px 14px rgba(26,35,64,.07);padding:26px;margin-bottom:20px;}
+.card.locked{opacity:.5;pointer-events:none;filter:grayscale(.4);}
+.card-title{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.c-icon{width:34px;height:34px;background:var(--light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:13px 16px;font-size:.88rem;line-height:1.6;}
+.ci{background:var(--light);border-left:4px solid var(--teal);color:var(--slate);}
+.cw{background:#FFF8E1;border-left:4px solid var(--gold);color:#7A5C00;}
+.co{background:#D4EDDA;border-left:4px solid var(--ok);color:#145224;}
+.cn{background:var(--navy);border-left:4px solid var(--teal);color:var(--white);}
+.ce{background:#F8D7DA;border-left:4px solid var(--err);color:#7a1020;}
+
+/* TESTO */
+.tp{font-size:.93rem;line-height:1.78;color:#333;margin-bottom:12px;}
+.tp:last-child{margin-bottom:0;}
+.th{font-size:.97rem;font-weight:700;color:var(--navy);margin:18px 0 6px;}
+.ev{background:var(--light);border-radius:5px;padding:2px 7px;color:var(--navy);font-weight:600;}
+.qt{border-left:3px solid var(--gold);padding:10px 16px;margin:12px 0;font-style:italic;color:var(--slate);font-size:.9rem;}
+
+/* BOTTONI */
+.btn{padding:9px 22px;border:none;border-radius:8px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
+.bp{background:var(--teal);color:var(--white);}
+.bp:hover{background:#25a88a;}
+.bn{background:var(--navy);color:var(--white);}
+.bn:hover{background:#131a30;}
+.bo{background:transparent;border:2px solid var(--teal);color:var(--teal);}
+.bo:hover{background:var(--light);}
+.bg{background:var(--gold);color:var(--navy);font-weight:800;}
+.btn:disabled{opacity:.38;cursor:not-allowed;}
+
+/* BRAINSTORMING */
+.bs-row{display:flex;gap:8px;margin-bottom:8px;}
+.bs-row input{flex:1;padding:9px 13px;border:2px solid #DDE1E7;border-radius:8px;font-size:.95rem;font-family:inherit;transition:border-color .2s;}
+.bs-row input:focus{outline:none;border-color:var(--teal);}
+#bs-fb{font-size:.83rem;min-height:18px;margin-bottom:8px;font-weight:600;}
+.sog-wrap{height:5px;background:#E0E4EA;border-radius:3px;overflow:hidden;margin-bottom:5px;}
+.sog-bar{height:100%;background:var(--teal);border-radius:3px;transition:width .4s;}
+#bs-cnt{font-size:.78rem;color:var(--gray);margin-bottom:10px;}
+#nuvola{min-height:60px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:12px;background:var(--bg);border-radius:9px;border:1px dashed #CDD1D9;margin-bottom:10px;}
+.tag{padding:5px 12px;border-radius:18px;font-weight:700;font-size:.85rem;}
+.ts{background:var(--teal);color:var(--white);}
+.td{background:var(--navy);color:var(--white);border:2px solid var(--gold);}
+.told{background:#D0EDE6;color:var(--slate);}
+
+/* MAPPA VISIVA */
+.mappa-vis{display:flex;flex-direction:column;align-items:center;gap:2px;margin:10px 0;}
+.mv-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.mv-nodo{padding:9px 18px;border-radius:8px;font-weight:700;font-size:.87rem;text-align:center;border:2px solid var(--navy);background:var(--white);color:var(--navy);}
+.mv-c{background:var(--navy);color:var(--white);border-color:var(--navy);font-size:.97rem;padding:11px 22px;}
+.mv-s{background:var(--light);border-color:var(--teal);color:var(--slate);}
+.mv-g{background:#FFF8E1;border-color:var(--gold);color:#7A5C00;}
+.mv-lv{width:2px;height:16px;background:#CDD1D9;margin:0 auto;}
+.mv-lh{height:2px;width:32px;background:#CDD1D9;}
+
+/* MAPPA LACUNOSA */
+.nl{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:12px;border:2px solid #E0E4EA;transition:border-color .2s;}
+.nl.nok{border-color:var(--ok);background:#D4EDDA14;}
+.nl.nko{border-color:var(--err);background:#F8D7DA14;}
+.fl{font-size:.95rem;line-height:1.8;color:var(--navy);font-weight:500;margin-bottom:10px;}
+.bw{color:var(--teal);font-weight:700;border-bottom:2px solid var(--teal);padding:0 3px;}
+.opz{display:flex;flex-wrap:wrap;gap:7px;}
+.ob{padding:6px 14px;border:2px solid #DDE1E7;border-radius:18px;background:var(--white);font-size:.87rem;cursor:pointer;font-family:inherit;transition:all .2s;color:var(--text);}
+.ob:hover{border-color:var(--teal);color:var(--teal);}
+.ob.sel{border-color:var(--navy);background:var(--navy);color:var(--white);}
+.ob.corr{border-color:var(--ok);background:var(--ok);color:var(--white);}
+.ob.sba{border-color:var(--err);background:var(--err);color:var(--white);}
+.nfb{margin-top:7px;font-size:.82rem;font-weight:600;min-height:14px;}
+
+/* CLOZE */
+.cloze-q{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:12px;border:2px solid #E0E4EA;}
+.cloze-q.nok{border-color:var(--ok);}
+.cloze-q.nko{border-color:var(--err);}
+.cloze-testo{font-size:.93rem;line-height:1.7;margin-bottom:10px;color:var(--navy);}
+.cloze-scelte{display:flex;flex-wrap:wrap;gap:7px;}
+
+/* FLASHCARD */
+.fc-wrap{perspective:1000px;margin-bottom:12px;}
+.fc{position:relative;width:100%;min-height:140px;cursor:pointer;transform-style:preserve-3d;transition:transform .4s;}
+.fc.flip{transform:rotateY(180deg);}
+.fcf,.fcb{
+  position:absolute;width:100%;min-height:140px;border-radius:10px;padding:20px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+}
+.fcf{background:var(--navy);color:var(--white);font-size:.98rem;font-weight:600;border:3px solid var(--teal);}
+.fcb{
+  background:var(--light);color:var(--navy);font-size:.9rem;line-height:1.6;
+  border:3px solid var(--teal);
+  transform:rotateY(180deg);
+  /* testo NON specchiato: il parent ruota, il figlio è già pre-ruotato di 180° */
+}
+.fcb .fcb-inner{transform:none;width:100%;}
+.fc-hint{position:absolute;bottom:7px;right:11px;font-size:.68rem;opacity:.45;}
+.fc-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.fc-stato{display:flex;gap:8px;margin-top:10px;}
+.fc-stato button{flex:1;padding:8px;border-radius:8px;border:none;font-family:inherit;font-size:.83rem;font-weight:700;cursor:pointer;}
+.fsok{background:var(--ok);color:var(--white);}
+.fsrip{background:#E0E4EA;color:var(--slate);}
+
+/* QUADERNO GUIDA */
+.quad-step{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:12px;border:2px solid #E0E4EA;transition:all .25s;}
+.quad-step.done{border-color:var(--ok);background:#D4EDDA14;}
+.quad-step-header{display:flex;align-items:flex-start;gap:12px;}
+.quad-chk{width:24px;height:24px;border-radius:6px;border:2px solid #CDD1D9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;margin-top:1px;transition:all .2s;}
+.quad-chk.on{background:var(--ok);border-color:var(--ok);color:var(--white);}
+.quad-step-body{flex:1;}
+.quad-step-title{font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:4px;}
+.quad-step-desc{font-size:.85rem;color:var(--slate);line-height:1.55;}
+.quad-step-desc strong{color:var(--navy);}
+.quad-schema{background:var(--navy);border-radius:8px;padding:14px;margin-top:10px;font-family:'Courier New',monospace;font-size:.78rem;color:var(--teal);line-height:1.7;white-space:pre;}
+.quad-unlock{margin-top:16px;padding:14px;background:var(--light);border-radius:8px;border:2px dashed var(--teal);text-align:center;}
+.quad-mancano{font-size:.82rem;color:var(--err);font-weight:700;margin-top:4px;}
+
+/* CASO */
+.caso-header{background:linear-gradient(135deg,var(--navy),var(--slate));border-radius:10px;padding:20px;color:var(--white);margin-bottom:14px;}
+.caso-tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
+.ctb{padding:7px 14px;border-radius:18px;border:2px solid #DDE1E7;background:var(--white);font-size:.83rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;color:var(--slate);}
+.ctb.on{background:var(--navy);color:var(--white);border-color:var(--navy);}
+.caso-sez{display:none;}
+.caso-sez.vis{display:block;}
+
+/* TABELLE CONFRONTO */
+.tab-cf{width:100%;border-collapse:collapse;font-size:.85rem;margin:10px 0;}
+.tab-cf th{background:var(--navy);color:var(--white);padding:9px 12px;text-align:left;}
+.tab-cf td{padding:8px 12px;border-bottom:1px solid #EEE;vertical-align:top;}
+.tab-cf tr:nth-child(even) td{background:var(--bg);}
+
+/* MOTIVAZIONALE */
+.motiv{text-align:center;padding:18px 12px;}
+.motiv .em{font-size:2.3rem;margin-bottom:9px;}
+.motiv p{font-size:1rem;color:var(--navy);font-weight:500;line-height:1.6;max-width:500px;margin:0 auto;}
+.perc{display:inline-block;background:var(--navy);color:var(--teal);font-size:1.9rem;font-weight:900;padding:10px 26px;border-radius:10px;margin-bottom:14px;letter-spacing:.04em;}
+
+/* RIPASSO */
+.rip-q{background:var(--bg);border-radius:10px;padding:16px;margin-bottom:12px;border:2px solid #E0E4EA;}
+.rip-q.nok{border-color:var(--ok);}
+.rip-q.nko{border-color:var(--err);}
+
+/* LOGIN */
+#screen-login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);padding:20px;}
+.lb{background:var(--white);border-radius:16px;padding:38px 34px;max-width:420px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.3);}
+.l-sig{font-size:2.1rem;font-weight:900;color:var(--navy);text-align:center;}
+.l-sub{font-size:.8rem;color:var(--gray);text-align:center;margin-top:3px;margin-bottom:26px;}
+.l-av{background:var(--light);border-left:4px solid var(--teal);padding:10px 13px;border-radius:0 8px 8px 0;font-size:.79rem;color:var(--slate);line-height:1.5;margin-bottom:20px;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-weight:600;font-size:.8rem;color:var(--slate);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.fg input,.fg select{width:100%;padding:9px 13px;border:2px solid #DDE1E7;border-radius:8px;font-size:.97rem;font-family:inherit;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--teal);}
+.ferr{color:var(--err);font-size:.8rem;margin-top:4px;min-height:14px;}
+
+/* UTILITY */
+.hidden{display:none!important;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt16{margin-top:16px;}.mt20{margin-top:20px;}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}
+.tr{text-align:right;}.tc{text-align:center;}
+.sep{height:1px;background:#EAEAEA;margin:18px 0;}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700;}
+.bdg-new{background:var(--teal);color:var(--white);}
+.bdg-rip{background:#FFF8E1;color:var(--gold);border:1px solid var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login">
+  <div class="lb">
+    <div class="l-sig">DEP</div>
+    <div class="l-sub">Diritto e Economia Politica — ITE Tambosi</div>
+    <div class="l-av">⚠ I progressi vengono salvati <strong>su questo dispositivo e questo browser</strong>. Usa sempre lo stesso browser per continuare il percorso.</div>
+    <div class="fg">
+      <label for="inp-nome">Il tuo nome</label>
+      <input type="text" id="inp-nome" placeholder="Nome e Cognome" maxlength="40" autocomplete="off">
+      <div class="ferr" id="ferr-nome"></div>
+    </div>
+    <div class="fg">
+      <label for="inp-classe">La tua classe</label>
+      <select id="inp-classe">
+        <option value="">— Seleziona —</option>
+        <optgroup label="Classi Prime">
+          <option value="1AE">1AE</option><option value="1AC">1AC</option>
+          <option value="1AD">1AD</option><option value="1AH">1AH</option><option value="1AA">1AA</option>
+        </optgroup>
+        <optgroup label="Classi Seconde">
+          <option value="2AC">2AC</option><option value="2AD">2AD</option>
+          <option value="2AF">2AF</option><option value="2AH">2AH</option>
+        </optgroup>
+      </select>
+      <div class="ferr" id="ferr-classe"></div>
+    </div>
+    <button class="btn bp" style="width:100%;margin-top:8px;" onclick="doLogin()">Inizia il percorso →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app" class="hidden">
+  <div id="header">
+    <h1>📘 Diritto e Economia Politica</h1>
+    <span id="header-info"></span>
+  </div>
+  <div id="stepper"></div>
+  <div id="pbar-wrap"><div id="pbar" style="width:0%"></div></div>
+  <div id="main"><div id="contenuto"></div></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIGURAZIONE
+// ═══════════════════════════════════════════
+const CFG = { gasUrl:'' };
+const BS_MIN = 3;
+
+const G = {
+  nome:'', classe:'', mod:'mod1', fase:0,
+  stati:[], errori:[],
+};
+
+const FASI = ['G1','G2','G3','G4','G5','G6','G7'];
+const FASI_LABEL = [
+  'Lo Stato','Forme di Stato','Gov. Parlamentare',
+  'Gov. Presidenziale','Caso Francia','Italia vs Francia','Ripasso'
+];
+
+// ═══════════════════════════════════════════
+// DIZIONARIO BRAINSTORMING
+// ═══════════════════════════════════════════
+const BSD = [
+  {c:'stato',v:['stato','statale','stati']},
+  {c:'democrazia',v:['democrazia','democratico','democratica','demo']},
+  {c:'territorio',v:['territorio','territoriale','territori','terra']},
+  {c:'sovranità',v:['sovranità','sovranita','sovrano','sovrana']},
+  {c:'popolo',v:['popolo','popolazione','popoli','cittadini','gente']},
+  {c:'governo',v:['governo','governativo','governare','governi']},
+  {c:'parlamento',v:['parlamento','parlamentare','parlamentari']},
+  {c:'costituzione',v:['costituzione','costituzionale','carta','costituzioni']},
+  {c:'repubblica',v:['repubblica','repubblicano','repubblicana']},
+  {c:'legge',v:['legge','leggi','normativa','norma','diritto']},
+  {c:'presidente',v:['presidente','presidenziale','presidenzialismo']},
+  {c:'potere',v:['potere','poteri','autorità']},
+  {c:'nazione',v:['nazione','nazionale','nazionali']},
+  {c:'elezione',v:['elezione','elezioni','voto','votare','suffragio']},
+  {c:'monarchia',v:['monarchia','monarchico','re','regina','monarca']},
+  {c:'degaulle',v:['de gaulle','degaulle','gaulle','charles']},
+  {c:'francia',v:['francia','francese','francesi']},
+  {c:'separazione',v:['separazione','divisione','bilanciamento']},
+  {c:'cittadinanza',v:['cittadinanza','cittadino']},
+  {c:'libertà',v:['libertà','liberta','libero','liberi']},
+];
+
+// ═══════════════════════════════════════════
+// DATI GIORNO PER GIORNO
+// ═══════════════════════════════════════════
+
+// ── FLASHCARD cumulative ──
+const FC = [
+  // G1
+  {id:'f1',g:1,d:'Quali sono i tre elementi costitutivi dello Stato?',r:'Popolo, territorio e sovranità. Tutti e tre devono essere presenti contemporaneamente.'},
+  {id:'f2',g:1,d:'Differenza tra forma di Stato e forma di governo?',r:'Forma di Stato = chi detiene il potere (rapporto Stato-cittadini). Forma di governo = come è organizzato il potere tra gli organi.'},
+  // G2
+  {id:'f3',g:2,d:'Cosa caratterizza uno Stato democratico?',r:'Riconosce i diritti fondamentali dei cittadini, divide i poteri tra più organi, prevede elezioni libere e periodiche.'},
+  {id:'f4',g:2,d:'Cos\'è uno Stato totalitario? Fai un esempio storico.',r:'Uno Stato che concentra tutto il potere in un solo soggetto o partito, sopprimendo ogni opposizione. Es: fascismo italiano, nazismo tedesco.'},
+  {id:'f5',g:2,d:'Differenza tra monarchia assoluta e monarchia costituzionale?',r:'Nella monarchia assoluta il re ha potere illimitato. In quella costituzionale il potere del re è limitato dalla Costituzione e da un parlamento.'},
+  // G3
+  {id:'f6',g:3,d:'Cos\'è il governo parlamentare? Chi ha più potere?',r:'Il parlamento è il centro del potere: nomina e può sfiduciare il governo. Il presidente della repubblica ha ruolo principalmente cerimoniale.'},
+  {id:'f7',g:3,d:'Cosa succede quando il parlamento vota la sfiducia al governo?',r:'Il governo deve dimettersi. Si forma un nuovo governo (con lo stesso o un diverso Primo Ministro) oppure si va a nuove elezioni.'},
+  // G4
+  {id:'f8',g:4,d:'Come funziona il governo presidenziale? (modello USA)',r:'Il presidente è eletto direttamente dai cittadini, è capo dello Stato E del governo, non può essere sfiduciato dal parlamento. Separazione netta dei poteri.'},
+  {id:'f9',g:4,d:'Cos\'è il governo semipresidenziale? Esempio.',r:'Combina elementi del sistema parlamentare e presidenziale. Il presidente ha poteri reali MA esiste anche un Primo Ministro responsabile davanti al parlamento. Esempio: Francia.'},
+  // G5
+  {id:'f10',g:5,d:'Perché la Quarta Repubblica francese era instabile?',r:'Il parlamento aveva tutto il potere ma nessuna maggioranza stabile. In 12 anni ci furono 25 governi, con una durata media inferiore a 6 mesi.'},
+  {id:'f11',g:5,d:'Quale fu il ruolo di De Gaulle nella nascita della Quinta Repubblica?',r:'Chiamato al potere nel 1958 durante la crisi algerina, scrisse una nuova Costituzione che rafforzava il presidente. Fu il primo presidente della Quinta Repubblica.'},
+  // G6
+  {id:'f12',g:6,d:'Perché l\'Italia del 1948 scelse il parlamentarismo e non il presidenzialismo?',r:'Per evitare il ritorno di un esecutivo forte dopo il fascismo. I costituenti temevano che un presidente con troppo potere potesse diventare un nuovo dittatore.'},
+  {id:'f13',g:6,d:'Qual è la principale differenza tra il sistema italiano e quello francese oggi?',r:'In Italia il presidente ha poteri limitati e il parlamento è centrale. In Francia il presidente è eletto direttamente e ha poteri esecutivi reali (semipresidenzialismo).'},
+];
+
+// ── NODI MAPPA LACUNOSA ──
+const NODI = {
+  g1:[
+    {id:'g1n1',pre:'Lo Stato è composto da: popolo, ',post:' e sovranità.',opz:['territorio','governo','parlamento','religione'],ok:'territorio'},
+    {id:'g1n2',pre:'Il potere supremo dello Stato si chiama ',post:'.',opz:['sovranità','democrazia','costituzione','autonomia'],ok:'sovranità'},
+  ],
+  g2:[
+    {id:'g2n1',pre:'Nello Stato democratico il potere appartiene al ',post:'.',opz:['popolo','re','presidente','governo'],ok:'popolo'},
+    {id:'g2n2',pre:'Lo Stato in cui tutto il potere è concentrato in un solo soggetto si chiama ',post:'.',opz:['totalitario','democratico','federale','monarchico'],ok:'totalitario'},
+    {id:'g2n3',pre:'Nella monarchia ',post:' il potere del re è limitato dalla Costituzione.',opz:['costituzionale','assoluta','parlamentare','federale'],ok:'costituzionale'},
+  ],
+  g3:[
+    {id:'g3n1',pre:'Nel governo parlamentare, il Presidente del Consiglio è responsabile davanti al ',post:'.',opz:['Parlamento','Presidente','popolo','Senato'],ok:'Parlamento'},
+    {id:'g3n2',pre:'Lo strumento con cui il Parlamento può far cadere il governo si chiama ',post:'.',opz:['mozione di sfiducia','referendum','veto','decreto'],ok:'mozione di sfiducia'},
+  ],
+  g4:[
+    {id:'g4n1',pre:'Nel sistema presidenziale il presidente è eletto ',post:'.',opz:['direttamente dai cittadini','dal Parlamento','dal Senato','dai partiti'],ok:'direttamente dai cittadini'},
+    {id:'g4n2',pre:'Il sistema che combina presidenzialismo e parlamentarismo si chiama ',post:'.',opz:['semipresidenziale','federale','bicamerale','misto'],ok:'semipresidenziale'},
+  ],
+  g5:[
+    {id:'g5n1',pre:'La Quarta Repubblica francese ebbe ',post:' governi in 12 anni.',opz:['25','5','50','12'],ok:'25'},
+    {id:'g5n2',pre:'De Gaulle instaurò la Quinta Repubblica nel ',post:'.',opz:['1958','1944','1968','1946'],ok:'1958'},
+  ],
+  g6:[
+    {id:'g6n1',pre:'La Costituzione italiana fu approvata nel ',post:'.',opz:['1948','1946','1958','1960'],ok:'1948'},
+    {id:'g6n2',pre:'Il sistema di governo italiano è ',post:'.',opz:['parlamentare','presidenziale','semipresidenziale','monarchico'],ok:'parlamentare'},
+  ],
+};
+
+// ── CLOZE TEST ──
+const CLOZE = {
+  g3:[
+    {id:'cg3_1',testo:'In Italia, il Presidente del Consiglio dei Ministri viene nominato dal Presidente della Repubblica, ma deve ottenere la ____ del Parlamento per governare.',scelte:['fiducia','firma','legge','nomina'],ok:'fiducia'},
+    {id:'cg3_2',testo:'Il Parlamento italiano è ____, cioè composto da Camera dei Deputati e Senato della Repubblica.',scelte:['bicamerale','monocamerale','federale','presidenziale'],ok:'bicamerale'},
+  ],
+  g4:[
+    {id:'cg4_1',testo:'Negli USA il presidente non può essere rimosso dal Congresso attraverso la sfiducia, ma solo attraverso una procedura chiamata ____.',scelte:['impeachment','referendum','voto','mozione'],ok:'impeachment'},
+    {id:'cg4_2',testo:'In Francia, il presidente può ____ il Parlamento e indire nuove elezioni.',scelte:['sciogliere','nominare','sfiduciare','eleggere'],ok:'sciogliere'},
+  ],
+  g5:[
+    {id:'cg5_1',testo:'De Gaulle tornò al potere nel 1958 durante la crisi della guerra di ____.',scelte:['Algeria','Vietnam','Indocina','Tunisia'],ok:'Algeria'},
+    {id:'cg5_2',testo:'Con la Quinta Repubblica, il presidente francese viene eletto ____ dai cittadini.',scelte:['direttamente','indirettamente','dal Parlamento','dal Senato'],ok:'direttamente'},
+  ],
+};
+
+// ── ISTRUZIONI QUADERNO ──
+const QUAD = {
+  g1:{
+    titolo:'Le istruzioni per il quaderno di oggi',
+    intro:'Prendi carta e penna. Segui le istruzioni in ordine. Spunta ogni casella quando hai finito di scrivere.',
+    steps:[
+      {id:'q1s1',titolo:'Intestazione della pagina',desc:'In alto a destra scrivi la <strong>data di oggi</strong>. Sotto scrivi: <strong>Materia: Diritto ed Economia Politica</strong>.',schema:null},
+      {id:'q1s2',titolo:'Titolo (grande, sottolineato)',desc:'Al centro della riga scrivi il titolo: <strong>"Modulo 1 — Le Forme di Stato, Lezione 1"</strong>. Sottolinealo con la riga.',schema:null},
+      {id:'q1s3',titolo:'Parole chiave (con definizione tua)',desc:'Scrivi le 3 parole chiave con la tua definizione, una per riga:\n• <strong>Popolo:</strong> ...\n• <strong>Territorio:</strong> ...\n• <strong>Sovranità:</strong> ...\nUsa le tue parole — non copiare dalla spiegazione.',schema:null},
+      {id:'q1s4',titolo:'Schema da copiare',desc:'Copia questo schema nel quaderno. Lascia spazio tra i box.',schema:`         ┌─────────────┐
+         │    STATO    │
+         └──────┬──────┘
+    ┌──────────┼──────────┐
+    ▼          ▼          ▼
+┌───────┐ ┌──────────┐ ┌──────────┐
+│Popolo │ │Territorio│ │Sovranità │
+└───────┘ └──────────┘ └──────────┘`},
+      {id:'q1s5',titolo:'Concetti principali (2 frasi tue)',desc:'Salta due righe. Scrivi: <strong>CONCETTI PRINCIPALI</strong> (sottolineato). Poi scrivi 2 frasi che spiegano cos\'è uno Stato con parole tutte tue.',schema:null},
+      {id:'q1s6',titolo:'Domanda aperta',desc:'In fondo alla pagina scrivi: <strong>DOMANDA</strong> (sottolineato). Poi scrivi una cosa che non hai ancora capito bene o che ti ha incuriosito.',schema:null},
+    ],
+    motiv_unlock:'Quaderno completato! Domani aggiungerai la seconda pagina — il quaderno di Diritto sta prendendo forma. 📓',
+  },
+  g2:{
+    titolo:'Quaderno — Giorno 2',
+    intro:'Apri il quaderno alla seconda pagina. Segui le istruzioni in ordine.',
+    steps:[
+      {id:'q2s1',titolo:'Intestazione',desc:'Data di oggi + Materia. Poi il titolo: <strong>"Modulo 1 — Le Forme di Stato, Lezione 2"</strong>',schema:null},
+      {id:'q2s2',titolo:'Parole chiave (3, con definizione tua)',desc:'• <strong>Stato democratico:</strong> ...\n• <strong>Stato totalitario:</strong> ...\n• <strong>Monarchia:</strong> ...',schema:null},
+      {id:'q2s3',titolo:'Tabella comparativa da copiare',desc:'Copia questa tabella nel quaderno:',schema:`┌──────────────────┬────────────────────┬────────────────┐
+│ TIPO DI STATO    │ CHI HA IL POTERE   │ ESEMPIO        │
+├──────────────────┼────────────────────┼────────────────┤
+│ Democratico      │ Il popolo          │ Italia, Francia│
+│ Totalitario      │ Un solo partito/   │ ________       │
+│                  │ persona            │                │
+│ Monarchia ass.   │ Il re              │ ________       │
+│ Monarchia cost.  │ Re + Parlamento    │ ________       │
+└──────────────────┴────────────────────┴────────────────┘`},
+      {id:'q2s4',titolo:'Completa la tabella',desc:'Negli spazi con ________ scrivi esempi storici che ricordi dalla spiegazione.',schema:null},
+      {id:'q2s5',titolo:'2 frasi tue sui concetti',desc:'Scrivi 2 frasi che spiegano la differenza tra uno Stato democratico e uno totalitario.',schema:null},
+      {id:'q2s6',titolo:'Domanda aperta',desc:'Una cosa che ti è rimasta o che non capisci ancora bene.',schema:null},
+    ],
+    motiv_unlock:'Seconda pagina completata! Il tuo quaderno di Diritto cresce ogni giorno. 💪',
+  },
+  g3:{
+    titolo:'Quaderno — Giorno 3',
+    intro:'Apri il quaderno alla terza pagina.',
+    steps:[
+      {id:'q3s1',titolo:'Intestazione e titolo',desc:'Data + Materia + Titolo: <strong>"Modulo 1 — Forme di Governo, Lezione 3: Il Parlamentarismo"</strong>',schema:null},
+      {id:'q3s2',titolo:'Parole chiave (3)',desc:'• <strong>Governo parlamentare:</strong> ...\n• <strong>Fiducia:</strong> ...\n• <strong>Mozione di sfiducia:</strong> ...',schema:null},
+      {id:'q3s3',titolo:'Schema degli organi — copia',desc:'Copia questo schema:',schema:`┌─────────────────────────────────────┐
+│        GOVERNO PARLAMENTARE         │
+├────────────────┬────────────────────┤
+│   PARLAMENTO   │      GOVERNO       │
+│ (eletto dai    │ (deve avere la     │
+│  cittadini)    │  fiducia del Parl.)│
+├────────────────┴────────────────────┤
+│  PRESIDENTE DELLA REPUBBLICA        │
+│  (ruolo principalmente cerimoniale) │
+└─────────────────────────────────────┘`},
+      {id:'q3s4',titolo:'2 frasi tue',desc:'Spiega con parole tue: cosa succede quando il parlamento vota la sfiducia al governo?',schema:null},
+      {id:'q3s5',titolo:'Collegamento con l\'Italia',desc:'Scrivi una frase che collega quello che hai studiato con l\'Italia di oggi.',schema:null},
+      {id:'q3s6',titolo:'Domanda aperta',desc:'Una cosa che ti è rimasta o che ti ha incuriosito.',schema:null},
+    ],
+    motiv_unlock:'Terza pagina completata! Stai costruendo un quaderno di Diritto vero. 🏛️',
+  },
+  g4:{
+    titolo:'Quaderno — Giorno 4',
+    intro:'Apri il quaderno alla quarta pagina.',
+    steps:[
+      {id:'q4s1',titolo:'Intestazione e titolo',desc:'Data + Materia + Titolo: <strong>"Modulo 1 — Forme di Governo, Lezione 4: Presidenzialismo e Semipresidenzialismo"</strong>',schema:null},
+      {id:'q4s2',titolo:'Parole chiave (3)',desc:'• <strong>Presidenzialismo:</strong> ...\n• <strong>Semipresidenzialismo:</strong> ...\n• <strong>Separazione dei poteri:</strong> ...',schema:null},
+      {id:'q4s3',titolo:'Tabella dei 3 sistemi — copia',desc:'Copia questa tabella:',schema:`┌──────────────┬─────────────┬───────────────┐
+│              │PARLAMENTARE │PRESIDENZIALE  │SEMIPRESID.   │
+├──────────────┼─────────────┼───────────────┤──────────────┤
+│Chi governa   │Primo Min.   │Presidente     │Pres.+P.Min.  │
+│Chi elegge    │Parlamento   │Cittadini      │Cittadini     │
+│  il capo     │             │ (dirette)     │ (dirette)    │
+│Sfiducia?     │Sì           │No             │Parziale      │
+│Esempio       │Italia       │USA            │Francia       │
+└──────────────┴─────────────┴───────────────┴──────────────┘`},
+      {id:'q4s4',titolo:'2 frasi tue',desc:'Spiega con parole tue la differenza principale tra presidenzialismo e parlamentarismo.',schema:null},
+      {id:'q4s5',titolo:'Domanda aperta',desc:'Una cosa che ti è rimasta.',schema:null},
+    ],
+    motiv_unlock:'Quarta pagina completata! Mancano solo 3 giorni alla fine del modulo. Sei sulla buona strada. 🎯',
+  },
+  g5:{
+    titolo:'Quaderno — Giorno 5',
+    intro:'Apri il quaderno alla quinta pagina. Oggi è dedicata al caso della settimana.',
+    steps:[
+      {id:'q5s1',titolo:'Intestazione e titolo',desc:'Data + Materia + Titolo: <strong>"Modulo 1 — Caso della settimana: Francia 1958"</strong>',schema:null},
+      {id:'q5s2',titolo:'Timeline da completare',desc:'Copia questa timeline e completa gli spazi con quello che hai imparato:',schema:`1946 → Nasce la IV Repubblica francese
+       Sistema: _______________
+
+1946-1958 → Periodo di instabilità
+       Numero di governi: ___
+
+1958 → Crisi: guerra di _______________
+       Chi viene chiamato al potere: _______________
+
+1958 → Nasce la V Repubblica
+       Novità principale: _______________
+       Sistema di governo: _______________
+
+OGGI → La V Repubblica esiste ancora`},
+      {id:'q5s3',titolo:'3 frasi tue su De Gaulle',desc:'Scrivi 3 frasi che spiegano chi era De Gaulle e perché è importante per capire la storia della Francia.',schema:null},
+      {id:'q5s4',titolo:'Collegamento con l\'Italia',desc:'Scrivi una frase che spiega la differenza tra la scelta francese del 1958 e la scelta italiana del 1948.',schema:null},
+      {id:'q5s5',titolo:'Domanda aperta',desc:'Una domanda che ti è rimasta su De Gaulle o sulla Francia.',schema:null},
+    ],
+    motiv_unlock:'Quinta pagina completata! Il caso della settimana è nella tua testa e nel tuo quaderno. 🇫🇷',
+  },
+  g6:{
+    titolo:'Quaderno — Giorno 6',
+    intro:'Apri il quaderno alla sesta pagina. Oggi facciamo sintesi.',
+    steps:[
+      {id:'q6s1',titolo:'Intestazione e titolo',desc:'Data + Materia + Titolo: <strong>"Modulo 1 — Sintesi: Italia e Francia a confronto"</strong>',schema:null},
+      {id:'q6s2',titolo:'Mappa completa del modulo — copia',desc:'Questa è la mappa finale di tutto il modulo. Copiala nel quaderno:',schema:`               STATO
+                 │
+    ┌────────────┼────────────┐
+    ▼            ▼            ▼
+ Popolo     Territorio    Sovranità
+                 │
+         FORMA DI STATO
+         │           │
+    Democratico   Non democratico
+         │         (totalitario,
+  FORMA DI        monarchico ass.)
+  GOVERNO
+  │        │       │
+Parlam.  Presid. Semipresid.
+(Italia) (USA)  (Francia)`},
+      {id:'q6s3',titolo:'Sintesi finale (5 frasi)',desc:'Scrivi 5 frasi che riassumono tutto il modulo. Devi toccare questi 5 argomenti: 1) cos\'è uno Stato, 2) differenza forma di Stato/governo, 3) governo parlamentare, 4) governo presidenziale/semipresidenziale, 5) caso Francia 1958.',schema:null},
+      {id:'q6s4',titolo:'Autovalutazione',desc:'Scrivi onestamente: quale argomento del modulo ti è ancora meno chiaro? Quale ti è piaciuto di più?',schema:null},
+    ],
+    motiv_unlock:'Sesta pagina completata! Domani è l\'ultimo giorno del modulo. Sei quasi arrivato. 🌟',
+  },
+  g7:{
+    titolo:'Quaderno — Giorno 7',
+    intro:'Apri il quaderno all\'ultima pagina del modulo.',
+    steps:[
+      {id:'q7s1',titolo:'Pagina finale — intestazione',desc:'Data + Materia + Titolo: <strong>"Modulo 1 — Pagina di Riepilogo Finale"</strong>',schema:null},
+      {id:'q7s2',titolo:'Le 5 cose più importanti',desc:'Senza guardare le pagine precedenti, scrivi le 5 cose più importanti che hai imparato in questo modulo. Poi confronta con quello che hai scritto nelle altre pagine.',schema:null},
+      {id:'q7s3',titolo:'Glossario essenziale',desc:'Scrivi una definizione tua per questi 6 termini:\n• Stato\n• Sovranità\n• Democrazia\n• Parlamentarismo\n• Presidenzialismo\n• Semipresidenzialismo',schema:null},
+      {id:'q7s4',titolo:'Firma del quaderno',desc:'In fondo all\'ultima pagina scrivi: <strong>"Modulo 1 completato il [data]"</strong> e firma. Il tuo quaderno di Diritto ha la sua prima sezione completa.',schema:null},
+    ],
+    motiv_unlock:'Quaderno del Modulo 1 completato! Hai 7 pagine di Diritto scritte con le tue mani. 🏆',
+  },
+};
+
+// ═══════════════════════════════════════════
+// MESSAGGI MOTIVAZIONALI
+// ═══════════════════════════════════════════
+const MSG_AP = [
+  '{nome}, oggi scoprirai cos\'è davvero uno Stato. Le idee che scrivi oggi conteranno.',
+  'Bene, {nome}! Oggi capisci perché gli Stati non sono tutti uguali. Vai avanti con curiosità.',
+  '{nome}, oggi entriamo nel cuore delle forme di governo. Un concetto alla volta.',
+  'Giorno 4, {nome}. Oggi confronti tre sistemi diversi — alla fine avrai le idee chiarissime.',
+  '{nome}, oggi è il giorno del caso concreto: la Francia di De Gaulle. La storia si fa interessante.',
+  'Quasi alla fine, {nome}. Oggi metti insieme tutto quello che hai imparato.',
+  'Ultimo giorno, {nome}. Oggi dimostri a te stesso quanto hai capito. Ce la fai.',
+];
+const MSG_CH = [
+  'Hai completato il Giorno 1, {nome}. Hai già i concetti fondamentali in testa. Domani si va avanti.',
+  'Ottimo lavoro, {nome}! Le forme di Stato sono tue. Il quaderno cresce.',
+  'Giorno 3 fatto, {nome}. Il parlamentarismo è chiaro. Domani arriviamo al presidenzialismo.',
+  '{nome}, quattro giorni su sette. Sei a metà e hai già capito i tre sistemi principali.',
+  'Il caso francese è nella tua testa e nel tuo quaderno, {nome}. Domani facciamo sintesi.',
+  'Sintesi completata, {nome}. Domani è l\'ultimo giorno — il più importante.',
+  'Modulo 1 completato, {nome}! Sette giorni, sette pagine di quaderno, un modulo in tasca. 🏆',
+];
+const PERC = ['14%','28%','42%','57%','71%','85%','100%'];
+
+// ═══════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════
+const ipl = t => t.replace(/\{nome\}/g, G.nome);
+const norm = s => s.toLowerCase()
+  .replace(/[àáâã]/g,'a').replace(/[èéêë]/g,'e')
+  .replace(/[ìíî]/g,'i').replace(/[òóô]/g,'o')
+  .replace(/[ùúû]/g,'u').trim();
+
+function nomeOk(n){
+  const s=n.trim();
+  if(s.length<2) return 'Il nome è troppo corto.';
+  if(/^(.)\1+$/.test(s)) return 'Sembra una sequenza ripetuta. Scrivi il tuo vero nome.';
+  if(!/[aeiouàèéìòù]/i.test(s)) return 'Il nome non contiene vocali.';
+  if(/^\d+$/.test(s)) return 'Scrivi il tuo nome, non un numero.';
+  return '';
+}
+
+function errKey(){ return `${norm(G.nome)}_${G.classe}_${G.mod}_errori`; }
+function loadErr(){ try{G.errori=JSON.parse(localStorage.getItem(errKey())||'[]');}catch(e){G.errori=[];} }
+function regErr(faseId,domId){
+  loadErr();
+  const i=G.errori.findIndex(e=>e.faseId===faseId&&e.domandaId===domId);
+  if(i>=0)G.errori[i].tentativiErrati++;
+  else G.errori.push({faseId,domandaId:domId,tentativiErrati:1});
+  try{localStorage.setItem(errKey(),JSON.stringify(G.errori));}catch(e){}
+}
+function send(p){
+  if(!CFG.gasUrl)return;
+  // GAS non supporta CORS con fetch+JSON direttamente.
+  // Soluzione: form POST in iframe nascosto — funziona senza preflight CORS.
+  try{
+    let iframe=document.getElementById('_gas_ifr');
+    if(!iframe){
+      iframe=document.createElement('iframe');
+      iframe.name='_gas_ifr';iframe.id='_gas_ifr';iframe.style.display='none';
+      document.body.appendChild(iframe);
+    }
+    const form=document.createElement('form');
+    form.method='POST';form.action=CFG.gasUrl;form.target='_gas_ifr';form.style.display='none';
+    const inp=document.createElement('input');
+    inp.type='hidden';inp.name='payload';inp.value=JSON.stringify(p);
+    form.appendChild(inp);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(()=>{try{document.body.removeChild(form);}catch(e){}},4000);
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════
+// SNAPSHOT
+// ═══════════════════════════════════════════
+function initSnap(i){
+  if(!G.stati[i]) G.stati[i]={
+    completata:false,
+    bs:{parole:[],concetti:[],docShown:false},
+    mappa:{},cloze:{},
+    fc:{stati:{},idx:0},
+    quad:{},  // {stepId: true/false}
+    casoTab:0,
+  };
+}
+const sn=i=>G.stati[i];
+function sv(path,val){
+  initSnap(G.fase);
+  const p=path.split('.');let o=G.stati[G.fase];
+  for(let i=0;i<p.length-1;i++)o=o[p[i]];
+  o[p[p.length-1]]=val;
+}
+
+// ═══════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════
+function doLogin(){
+  const ne=document.getElementById('inp-nome');
+  const ce=document.getElementById('inp-classe');
+  const en=document.getElementById('ferr-nome');
+  const ec=document.getElementById('ferr-classe');
+  en.textContent='';ec.textContent='';
+  const err=nomeOk(ne.value);
+  if(err){en.textContent=err;ne.focus();return;}
+  if(!ce.value){ec.textContent='Seleziona la tua classe.';ce.focus();return;}
+  G.nome=ne.value.trim();G.classe=ce.value;
+  loadErr();
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-app').classList.remove('hidden');
+  document.getElementById('header-info').textContent=G.nome+' · '+G.classe;
+  renderStepper();
+  goFase(0);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inp-nome').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+});
+
+// ═══════════════════════════════════════════
+// STEPPER
+// ═══════════════════════════════════════════
+function renderStepper(){
+  const el=document.getElementById('stepper');el.innerHTML='';
+  FASI.forEach((f,i)=>{
+    const s=G.stati[i];
+    const done=s&&s.completata;
+    const curr=i===G.fase;
+    const lock=i>G.fase;
+    const wrap=document.createElement('div');wrap.className='step-item';
+    const btn=document.createElement('button');
+    btn.className='step-btn'+(done?' ok':'')+(curr?' curr':'');
+    btn.disabled=lock;
+    btn.innerHTML=`<div class="step-circle">${done?'✓':(i+1)}</div><div class="step-label">${FASI_LABEL[i]}</div>`;
+    if(!lock&&!curr)btn.onclick=()=>goFase(i);
+    wrap.appendChild(btn);
+    if(i<FASI.length-1){
+      const c=document.createElement('div');c.className='step-conn'+(done?' done':'');
+      wrap.appendChild(c);
+    }
+    el.appendChild(wrap);
+  });
+}
+
+// ═══════════════════════════════════════════
+// NAVIGAZIONE FASE
+// ═══════════════════════════════════════════
+function goFase(i){
+  G.fase=i;initSnap(i);
+  document.getElementById('pbar').style.width=((i+1)/7*100)+'%';
+  renderStepper();
+  const el=document.getElementById('contenuto');el.innerHTML='';
+  const builders=[renderG1,renderG2,renderG3,renderG4,renderG5,renderG6,renderG7];
+  builders[i](el);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════
+// COMPONENTI CONDIVISI
+// ═══════════════════════════════════════════
+
+// ── Apertura ──
+function mkApertura(gi){
+  const c=mk('card');
+  c.innerHTML=`<div class="motiv"><div class="em">🏛️</div><p>${ipl(MSG_AP[gi])}</p></div>`;
+  return c;
+}
+
+// ── Brainstorming ──
+// Lista volgarità (minima, gestita con suggerimento educativo)
+const VOLG=['cazzo','merda','vaffanculo','stronzo','coglione','figa','culo','minchia','porco','porcoddio','puttana','bastardo'];
+
+function contieneVolg(s){
+  const n=norm(s);
+  return VOLG.some(v=>n.includes(v));
+}
+
+function mkBs(s,gi){
+  const c=mk('card');c.id='card-bs';
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">🧠</div>Brainstorming — Cosa sai già?</div>
+    <p class="tp">Scrivi <strong>almeno ${BS_MIN} parole</strong> che ti vengono in mente pensando alla parola <em>"Stato"</em> ${gi>0?'(aggiungi parole nuove a quelle dei giorni scorsi)':''}.</p>
+    <div class="bs-row"><input type="text" id="bs-inp" placeholder="Scrivi una parola..." maxlength="30" autocomplete="off"><button class="btn bp" onclick="bsAdd()">Aggiungi</button></div>
+    <div id="bs-fb"></div>
+    <div class="sog-wrap"><div class="sog-bar" id="sog-bar" style="width:0%"></div></div>
+    <div id="bs-cnt">0 / ${BS_MIN} parole minime</div>
+    <div id="nuvola"></div>
+    <div id="bs-btn-wrap" class="tc mt12 hidden">
+      <button class="btn bg" onclick="bsShowDoc()">✓ Ho inserito le mie parole — vai avanti →</button>
+    </div>
+    <div id="bs-skip-wrap" class="tc mt8 hidden">
+      <button class="btn bo" style="font-size:.8rem;padding:6px 14px;" onclick="bsShowDoc()">
+        Non trovo altre parole — vai avanti lo stesso →
+      </button>
+    </div>`;
+  setTimeout(()=>{
+    const inp=document.getElementById('bs-inp');
+    if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')bsAdd();});
+    renderNuvola(s);
+  },0);
+  return c;
+}
+
+function renderNuvola(s){
+  const el=document.getElementById('nuvola');if(!el)return;
+  if(!s.bs.parole.length&&!s.bs.docShown){
+    el.innerHTML='<span style="color:var(--gray);font-size:.83rem;font-style:italic;">Le tue parole appariranno qui.</span>';
+  } else {
+    const ts=s.bs.parole.map(p=>`<span class="tag ts">${p}</span>`).join('');
+    const td=s.bs.docShown?BSD.slice(0,4).map(e=>`<span class="tag td" title="${e.c}">📌 ${e.c}</span>`).join(''):'';
+    el.innerHTML=ts+td;
+    if(s.bs.docShown){
+      const h=document.createElement('div');
+      h.style='font-size:.73rem;color:var(--gray);margin-top:7px;width:100%;';
+      h.textContent='📌 Parole con bordo oro = parole chiave del docente';
+      el.appendChild(h);
+    }
+  }
+  const perc=Math.min(100,Math.round(s.bs.parole.length/BS_MIN*100));
+  const bar=document.getElementById('sog-bar');if(bar)bar.style.width=perc+'%';
+  const cnt=document.getElementById('bs-cnt');if(cnt)cnt.textContent=s.bs.parole.length+' / '+BS_MIN+' parole minime';
+  const bw=document.getElementById('bs-btn-wrap');
+  if(bw){if(s.bs.parole.length>=BS_MIN&&!s.bs.docShown)bw.classList.remove('hidden');else bw.classList.add('hidden');}
+}
+
+function bsAdd(){
+  const inp=document.getElementById('bs-inp');
+  const fb=document.getElementById('bs-fb');
+  if(!inp||!fb)return;
+  const raw=inp.value.trim();if(!raw)return;
+  const s=sn(G.fase);
+
+  // Filtro volgarità
+  if(contieneVolg(raw)){
+    fb.style.color='var(--err)';
+    fb.textContent='⚠ Questa parola non è adatta. Il quaderno di Diritto è uno spazio di studio serio — usa un termine diverso.';
+    inp.value='';inp.focus();return;
+  }
+
+  const n=norm(raw);
+  const entry=BSD.find(e=>e.v.some(v=>norm(v)===n));
+
+  if(!entry){
+    if(!s.bs._tentFalliti)s.bs._tentFalliti=0;
+    s.bs._tentFalliti++;
+    fb.style.color='var(--err)';
+    fb.textContent='❌ "'+raw+'" non è pertinente al tema Stato. Prova con un\'altra parola (es. governo, popolo, legge...).';
+    inp.value='';inp.focus();
+    // Dopo 3 tentativi falliti mostra pulsante per andare avanti
+    if(s.bs._tentFalliti>=3){
+      const sw=document.getElementById('bs-skip-wrap');
+      if(sw)sw.classList.remove('hidden');
+    }
+    return;
+  }
+
+  if(s.bs.concetti.includes(entry.c)){
+    if(!s.bs._tentDupl)s.bs._tentDupl=0;
+    s.bs._tentDupl++;
+    fb.style.color='var(--gold)';
+    fb.textContent='⚠ Questo concetto è già nella nuvola. Prova con una parola diversa, o vai avanti se non ne trovi altre.';
+    inp.value='';inp.focus();
+    if(s.bs._tentDupl>=2){
+      const sw=document.getElementById('bs-skip-wrap');
+      if(sw)sw.classList.remove('hidden');
+    }
+    return;
+  }
+
+  s.bs.concetti.push(entry.c);s.bs.parole.push(raw);
+  s.bs._tentFalliti=0;s.bs._tentDupl=0;
+  fb.style.color='var(--ok)';fb.textContent='✓ "'+raw+'" aggiunta!';
+  inp.value='';inp.focus();
+  renderNuvola(s);sv('bs',s.bs);
+}
+
+function bsShowDoc(){
+  const s=sn(G.fase);s.bs.docShown=true;sv('bs',s.bs);
+  renderNuvola(s);
+  aggiornaSezioni(s);
+  setTimeout(()=>{
+    const el=document.getElementById('card-bsdoc');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+
+// ── Brainstorming docente ──
+function mkBsDoc(s){
+  const c=mk('card hidden');c.id='card-bsdoc';
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">📌</div>Parole chiave del docente</div>
+    <p class="tp">Confronta queste quattro parole chiave con le tue. Ne avevi già trovata qualcuna?</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:4px;">
+      ${BSD.slice(0,4).map(e=>`<div style="background:var(--navy);border-radius:9px;padding:13px;">
+        <div style="color:var(--teal);font-weight:700;margin-bottom:5px;">${e.c}</div>
+        <div style="color:#CDD1D9;font-size:.82rem;line-height:1.5;">${bsDesc(e.c)}</div>
+      </div>`).join('')}
+    </div>
+    <div class="callout ci mt12">Le parole chiave del docente appaiono anche nella tua nuvola con bordo oro 📌.</div>`;
+  return c;
+}
+
+function bsDesc(c){
+  const m={
+    'stato':'L\'organizzazione politica di un territorio con un popolo e una sovranità.',
+    'democrazia':'Il sistema in cui il potere appartiene al popolo.',
+    'territorio':'Lo spazio fisico su cui lo Stato esercita il potere.',
+    'sovranità':'Il potere supremo di governare, verso l\'interno e l\'esterno.',
+  };
+  return m[c]||'';
+}
+
+// ── Mappa docente visiva ──
+function mkMappaDoc(s,html){
+  const c=mk('card hidden');c.id='card-mappaviz';
+  c.innerHTML=`<div class="card-title"><div class="c-icon">🗺️</div>Mappa introduttiva</div>
+    <p class="tp">Prima di leggere la spiegazione, guarda questa mappa dei concetti.</p>
+    <div class="mappa-vis" id="mappa-vis"></div>`;
+  setTimeout(()=>{const el=document.getElementById('mappa-vis');if(el&&html)el.innerHTML=html;},0);
+  return c;
+}
+
+// ── Spiegazione ──
+function mkSpieg(s,html,id='card-spieg'){
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`<div class="card-title"><div class="c-icon">📖</div>Spiegazione</div>${html}`;
+  return c;
+}
+
+// ── Esercizi: mappa lacunosa ──
+function mkMappa(s,giKey,id='card-eserc'){
+  const nodi=NODI[giKey]||[];
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">✏️</div>Esercizi — Completa la mappa</div>
+    <p class="tp mb12">Scegli la parola corretta per completare ogni frase.</p>
+    <div id="nodi-lac"></div>
+    <div class="tr mt12"><button class="btn bo" onclick="verificaMappa('${giKey}')">Verifica →</button></div>
+    <div id="mappa-fb" class="mt8"></div>`;
+  setTimeout(()=>renderNodi(s,nodi),0);
+  return c;
+}
+
+function renderNodi(s,nodi){
+  const el=document.getElementById('nodi-lac');if(!el)return;
+  el.innerHTML='';
+  nodi.forEach(n=>{
+    const r=s.mappa[n.id]||null;
+    const div=mk('nl');div.id='nl-'+n.id;
+    div.innerHTML=`<div class="fl">${n.pre}<span class="bw" id="bl-${n.id}">${r||'________'}</span>${n.post}</div>
+      <div class="opz">${n.opz.map(o=>`<button class="ob${r===o?' sel':''}" onclick="selOpz('${n.id}','${o.replace(/'/g,"\\'")}','${n.ok.replace(/'/g,"\\'")}',this)">${o}</button>`).join('')}</div>
+      <div class="nfb" id="nfb-${n.id}"></div>`;
+    el.appendChild(div);
+  });
+}
+
+function selOpz(nid,op,ok,btn){
+  const s=sn(G.fase);s.mappa[nid]=op;sv('mappa',s.mappa);
+  const bl=document.getElementById('bl-'+nid);if(bl)bl.textContent=op;
+  const nEl=document.getElementById('nl-'+nid);
+  if(nEl)nEl.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===op?' sel':''));
+}
+
+function verificaMappa(giKey){
+  const s=sn(G.fase);const nodi=NODI[giKey]||[];
+  let ok=0;const fb=document.getElementById('mappa-fb');
+  nodi.forEach(n=>{
+    const r=s.mappa[n.id];
+    const nEl=document.getElementById('nl-'+n.id);
+    const fEl=document.getElementById('nfb-'+n.id);
+    if(!r){if(nEl)nEl.className='nl nko';if(fEl){fEl.style.color='var(--err)';fEl.textContent='⚠ Scegli una risposta.';}regErr('g'+(G.fase+1)+'_mappa',n.id);return;}
+    const corr=r===n.ok;
+    if(nEl)nEl.className='nl '+(corr?'nok':'nko');
+    if(nEl)nEl.querySelectorAll('.ob').forEach(b=>{
+      if(b.textContent===n.ok)b.className='ob corr';
+      else if(b.textContent===r&&!corr)b.className='ob sba';
+    });
+    if(fEl){fEl.style.color=corr?'var(--ok)':'var(--err)';fEl.textContent=corr?'✓ Corretto!':'✗ Risposta: "'+n.ok+'".';}
+    if(corr)ok++;else regErr('g'+(G.fase+1)+'_mappa',n.id);
+  });
+  if(fb)fb.innerHTML=ok===nodi.length
+    ?'<div class="callout co">✓ Mappa completata correttamente! Ottimo lavoro.</div>'
+    :'<div class="callout cw">'+ok+' su '+nodi.length+' corrette. Rivedi le risposte in rosso e riprova.</div>';
+}
+
+// ── Cloze test ──
+function mkCloze(s,giKey,id='card-cloze'){
+  const domande=CLOZE[giKey]||[];if(!domande.length)return null;
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`<div class="card-title"><div class="c-icon">🔤</div>Cloze test — Completa le frasi</div>
+    <p class="tp mb12">Scegli la parola che completa correttamente ogni frase.</p>
+    <div id="cloze-lista"></div>
+    <div class="tr mt12"><button class="btn bo" onclick="verificaCloze('${giKey}')">Verifica →</button></div>
+    <div id="cloze-fb" class="mt8"></div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('cloze-lista');if(!el)return;
+    domande.forEach(d=>{
+      const r=s.cloze[d.id]||null;
+      const div=mk('cloze-q');div.id='cq-'+d.id;
+      div.innerHTML=`<div class="cloze-testo">${d.testo.replace('____','<span class="bw" id="cb-'+d.id+'">'+(r||'____')+'</span>')}</div>
+        <div class="cloze-scelte">${d.scelte.map(sc=>`<button class="ob${r===sc?' sel':''}" onclick="selCloze('${d.id}','${sc}')">${sc}</button>`).join('')}</div>
+        <div class="nfb" id="cfb-${d.id}"></div>`;
+      el.appendChild(div);
+    });
+  },0);
+  return c;
+}
+
+function selCloze(did,sc){
+  const s=sn(G.fase);s.cloze[did]=sc;sv('cloze',s.cloze);
+  const cb=document.getElementById('cb-'+did);if(cb)cb.textContent=sc;
+  const cq=document.getElementById('cq-'+did);
+  if(cq)cq.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===sc?' sel':''));
+}
+
+function verificaCloze(giKey){
+  const s=sn(G.fase);const dom=CLOZE[giKey]||[];let ok=0;
+  const fb=document.getElementById('cloze-fb');
+  dom.forEach(d=>{
+    const r=s.cloze[d.id];
+    const cq=document.getElementById('cq-'+d.id);
+    const cf=document.getElementById('cfb-'+d.id);
+    if(!r){if(cq)cq.className='cloze-q nko';if(cf){cf.style.color='var(--err)';cf.textContent='⚠ Scegli una risposta.';}regErr('g'+(G.fase+1)+'_cloze',d.id);return;}
+    const corr=r===d.ok;
+    if(cq)cq.className='cloze-q '+(corr?'nok':'nko');
+    if(cq)cq.querySelectorAll('.ob').forEach(b=>{
+      if(b.textContent===d.ok)b.className='ob corr';
+      else if(b.textContent===r&&!corr)b.className='ob sba';
+    });
+    if(cf){cf.style.color=corr?'var(--ok)':'var(--err)';cf.textContent=corr?'✓ Corretto!':'✗ Risposta: "'+d.ok+'".';}
+    if(corr)ok++;else regErr('g'+(G.fase+1)+'_cloze',d.id);
+  });
+  if(fb)fb.innerHTML=ok===dom.length
+    ?'<div class="callout co">✓ Cloze completato! Bravissimo.</div>'
+    :'<div class="callout cw">'+ok+' su '+dom.length+' corrette.</div>';
+}
+
+// ── Flashcard ──
+function mkFlashcard(s,gi,id='card-fc'){
+  const fcDel=FC.filter(f=>f.g<=gi+1);
+  const nuove=FC.filter(f=>f.g===gi+1);
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">🃏</div>Flashcard <span class="badge bdg-new ml4">${nuove.length} nuove oggi</span></div>
+    <p class="tp mb12">Clicca per girare. Valuta onestamente. Le carte nuove di oggi hanno il bordo oro.</p>
+    <div class="fc-nav">
+      <button class="btn bo" id="fc-prev" onclick="fcNav(-1)">← Prec.</button>
+      <span id="fc-cnt" style="font-size:.83rem;color:var(--gray);">1 / ${fcDel.length}</span>
+      <button class="btn bo" id="fc-next" onclick="fcNav(1)">Succ. →</button>
+    </div>
+    <div class="fc-wrap"><div class="fc" id="fc-card" onclick="fcFlip()">
+      <div class="fc-f" id="fc-f"><div></div></div>
+      <div class="fc-b" id="fc-b"></div>
+    </div></div>
+    <div class="fc-stato hidden" id="fc-stato">
+      <button class="fsok" onclick="fcVal('ok')">✓ Lo sapevo</button>
+      <button class="fsrip" onclick="fcVal('rip')">↩ Da ripassare</button>
+    </div>
+    <div id="fc-prog" style="margin-top:9px;font-size:.8rem;color:var(--gray);text-align:right;"></div>`;
+  setTimeout(()=>renderFc(s,gi),0);
+  return c;
+}
+
+function fcDel(gi){return FC.filter(f=>f.g<=gi+1);}
+
+function renderFc(s,gi){
+  const cards=fcDel(gi);
+  const idx=s.fc.idx||0;const fc=cards[idx];if(!fc)return;
+  const nuova=fc.g===gi+1;
+  const fEl=document.getElementById('fc-f');
+  const bEl=document.getElementById('fc-b');
+  const card=document.getElementById('fc-card');
+  if(fEl){
+    fEl.style.borderColor=nuova?'var(--gold)':'var(--teal)';
+    fEl.innerHTML=`<div>${fc.d}<div class="fc-hint">clicca per girare</div></div>`;
+  }
+  if(bEl){
+    bEl.style.borderColor=nuova?'var(--gold)':'var(--teal)';
+    // Usa div interno per evitare testo specchiato dopo rotazione CSS
+    bEl.innerHTML=`<div class="fcb-inner">${fc.r}</div>`;
+  }
+  if(card)card.classList.remove('flip');
+  const st=document.getElementById('fc-stato');if(st)st.classList.add('hidden');
+  const cnt=document.getElementById('fc-cnt');if(cnt)cnt.textContent=(idx+1)+' / '+cards.length;
+  const prev=document.getElementById('fc-prev');if(prev)prev.disabled=idx===0;
+  const next=document.getElementById('fc-next');if(next)next.disabled=idx===cards.length-1;
+  const prog=document.getElementById('fc-prog');
+  if(prog)prog.textContent=Object.keys(s.fc.stati).length+' su '+cards.length+' valutate';
+}
+
+function fcFlip(){
+  const card=document.getElementById('fc-card');if(!card)return;
+  card.classList.toggle('flip');
+  const st=document.getElementById('fc-stato');
+  if(card.classList.contains('flip')&&st)st.classList.remove('hidden');
+}
+
+function fcVal(esito){
+  const s=sn(G.fase);const gi=G.fase;
+  const cards=fcDel(gi);const idx=s.fc.idx||0;const fc=cards[idx];if(!fc)return;
+  s.fc.stati[fc.id]=esito;
+  if(esito==='rip')regErr('g'+(gi+1)+'_fc',fc.id);
+  sv('fc',s.fc);
+  if(idx<cards.length-1){s.fc.idx=idx+1;renderFc(s,gi);}
+  else{
+    const st=document.getElementById('fc-stato');if(st)st.classList.add('hidden');
+    const prog=document.getElementById('fc-prog');
+    if(prog)prog.innerHTML='<span style="color:var(--ok);font-weight:700;">✓ Tutte le flashcard completate! Ottimo.</span>';
+  }
+}
+
+function fcNav(d){
+  const s=sn(G.fase);const gi=G.fase;
+  const cards=fcDel(gi);
+  const i=(s.fc.idx||0)+d;
+  if(i<0||i>=cards.length)return;
+  s.fc.idx=i;renderFc(s,gi);
+}
+
+// ── Quaderno guida ──
+function mkQuaderno(s,gi,id='card-quad'){
+  const data=QUAD['g'+(gi+1)];
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">📓</div>${data.titolo}</div>
+    <div class="callout cn mb12">✏️ Prendi carta e penna. ${data.intro}</div>
+    <div id="quad-steps"></div>
+    <div id="quad-unlock" class="quad-unlock hidden">
+      <div class="em" style="font-size:1.6rem;">🎉</div>
+      <div style="font-weight:700;color:var(--navy);margin-top:4px;">${data.motiv_unlock}</div>
+    </div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('quad-steps');if(!el)return;
+    data.steps.forEach((step,i)=>{
+      const done=!!(s.quad&&s.quad[step.id]);
+      const div=mk('quad-step'+(done?' done':''));div.id='qs-'+step.id;
+      div.innerHTML=`<div class="quad-step-header">
+        <div class="quad-chk${done?' on':''}" id="qchk-${step.id}" onclick="togQuad('${step.id}')">
+          ${done?'✓':''}
+        </div>
+        <div class="quad-step-body">
+          <div class="quad-step-title">${i+1}. ${step.titolo}</div>
+          <div class="quad-step-desc">${step.desc.replace(/\n/g,'<br>')}</div>
+          ${step.schema?`<div class="quad-schema">${step.schema}</div>`:''}
+        </div>
+      </div>`;
+      el.appendChild(div);
+    });
+    aggiornaQuadUnlock(s,data);
+  },0);
+  return c;
+}
+
+function togQuad(stepId){
+  const s=sn(G.fase);
+  if(!s.quad)s.quad={};
+  s.quad[stepId]=!s.quad[stepId];
+  sv('quad',s.quad);
+  const chk=document.getElementById('qchk-'+stepId);
+  const qs=document.getElementById('qs-'+stepId);
+  if(chk){if(s.quad[stepId]){chk.classList.add('on');chk.textContent='✓';}else{chk.classList.remove('on');chk.textContent='';}}
+  if(qs){if(s.quad[stepId])qs.classList.add('done');else qs.classList.remove('done');}
+  const data=QUAD['g'+(G.fase+1)];
+  aggiornaQuadUnlock(s,data);
+}
+
+function aggiornaQuadUnlock(s,data){
+  const tutte=data.steps.every(st=>s.quad&&s.quad[st.id]);
+  const el=document.getElementById('quad-unlock');
+  if(el){if(tutte)el.classList.remove('hidden');else el.classList.add('hidden');}
+  // Sblocca pulsante chiusura
+  const btn=document.getElementById('btn-completa');
+  if(btn)btn.disabled=!tutte;
+  // mostra testo mancanti
+  const mancano=data.steps.filter(st=>!(s.quad&&s.quad[st.id])).length;
+  const ma=document.getElementById('quad-mancano');
+  if(ma)ma.textContent=tutte?'':('Ancora '+mancano+' sezioni da completare nel quaderno.');
+}
+
+// ── Chiusura ──
+function mkChiusura(gi,id='card-chius'){
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`<div style="text-align:center;padding:8px 0 14px;">
+    <div class="perc">${PERC[gi]}</div>
+    <div class="motiv" style="padding:0;"><div class="em">🎯</div><p>${ipl(MSG_CH[gi])}</p></div>
+    <div class="callout ci" style="margin-top:18px;text-align:left;">
+      <strong>📌 Prima di domani:</strong> rileggi le pagine del quaderno scritte oggi. Non serve aggiungere nulla — basta rileggere una volta.
+    </div>
+    <div id="quad-mancano" class="quad-mancano mt8"></div>
+    <button class="btn bn" id="btn-completa" style="margin-top:18px;" onclick="completaFase()" disabled>
+      ✓ Ho finito il Giorno ${gi+1}
+    </button>
+  </div>`;
+  return c;
+}
+
+function completaFase(){
+  const s=sn(G.fase);s.completata=true;sv('completata',true);
+  send({nome:G.nome,classe:G.classe,mod:G.mod,giorno:G.fase+1,
+    ts:new Date().toISOString(),bs:s.bs.concetti,mappa:s.mappa,fc:s.fc.stati});
+  renderStepper();
+  const msg=G.fase<6
+    ?`Giorno ${G.fase+1} completato! Il Giorno ${G.fase+2} è sbloccato.`
+    :`Modulo 1 completato, ${G.nome}! Hai 7 pagine di quaderno e tutto il modulo in testa. 🏆`;
+  const el=document.getElementById('contenuto');
+  el.innerHTML=`<div class="card">
+    <div class="motiv"><div class="em">${G.fase<6?'🎉':'🏆'}</div><p>${msg}</p></div>
+    <div class="callout co mt12">
+      ${G.fase<6
+        ?`<button class="btn bp" onclick="goFase(${G.fase+1})">Vai al Giorno ${G.fase+2} →</button>`
+        :'Tutti i giorni completati. Ottimo lavoro!'}
+    </div>
+    <div class="tc mt12"><button class="btn bo" onclick="goFase(${G.fase})">← Rivedi il Giorno ${G.fase+1}</button></div>
+  </div>`;
+}
+
+// ── Caso della settimana ──
+function mkCaso(s,id='card-caso'){
+  const c=mk('card hidden');c.id=id;
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon">🇫🇷</div>Caso della settimana — Francia 1958</div>
+    <div class="caso-header">
+      <h3 style="font-size:1.05rem;margin-bottom:5px;">De Gaulle e la nascita della Quinta Repubblica</h3>
+      <p style="font-size:.85rem;opacity:.85;">Come un Paese cambiò forma di governo per uscire dall'instabilità — e perché ci riguarda.</p>
+    </div>
+    <div class="caso-tabs">
+      <button class="ctb on" onclick="casoTab(0,this)">📜 Il problema</button>
+      <button class="ctb" onclick="casoTab(1,this)">⚡ La svolta</button>
+      <button class="ctb" onclick="casoTab(2,this)">🔎 Confronto Italia</button>
+    </div>
+    <div class="caso-sez vis" id="caso-0">
+      <p class="tp">Dopo la Seconda Guerra Mondiale, la Francia adottò la <strong>Quarta Repubblica</strong> (1946–1958): un sistema parlamentare in cui il Parlamento aveva tutto il potere. Il risultato? In 12 anni si avvicendarono <span class="ev">25 governi diversi</span>. La durata media era meno di sei mesi.</p>
+      <p class="tp">Il Paese era paralizzato: le decisioni urgenti — soprattutto sulla guerra d'Algeria — non venivano prese perché ogni governo cadeva prima di affrontarle.</p>
+      <div class="callout cw mt12">Questo non è solo un problema francese: l'Italia ha avuto <strong>più di 60 governi</strong> dal 1946 ad oggi. Il confronto è immediato.</div>
+    </div>
+    <div class="caso-sez" id="caso-1">
+      <p class="tp">Nel 1958 il generale <strong>Charles de Gaulle</strong> — eroe della Resistenza — viene chiamato a salvare la Francia. Accetta a una condizione: una nuova Costituzione.</p>
+      <p class="tp">Nasce la <strong>Quinta Repubblica</strong>: sistema <span class="ev">semipresidenziale</span>. Il Presidente — eletto direttamente dai cittadini — ha poteri reali: può sciogliere il Parlamento, nominare il Primo Ministro, guidare la politica estera e di difesa.</p>
+      <div class="qt">De Gaulle: «Non si può governare la Francia con i partiti — si può governare solo con il popolo.»</div>
+      <div class="callout ci">La Quinta Repubblica francese esiste ancora oggi ed è uno dei sistemi di governo più stabili d'Europa.</div>
+    </div>
+    <div class="caso-sez" id="caso-2">
+      <table class="tab-cf">
+        <tr><th></th><th>🇫🇷 IV Repubblica (1946–58)</th><th>🇫🇷 V Repubblica (1958–oggi)</th></tr>
+        <tr><td>Sistema</td><td>Parlamentare puro</td><td>Semipresidenziale</td></tr>
+        <tr><td>Governi</td><td>25 in 12 anni</td><td>Stabilità strutturale</td></tr>
+        <tr><td>Presidente</td><td>Ruolo cerimoniale</td><td>Poteri esecutivi reali</td></tr>
+        <tr><td>Eletto da</td><td>Parlamento</td><td>Cittadini (voto diretto)</td></tr>
+      </table>
+      <div class="callout ci mt12"><strong>Collegamento con l'Italia:</strong> La Costituzione italiana del 1948 scelse il parlamentarismo <em>intenzionalmente</em>, per evitare il ritorno di un esecutivo forte dopo il fascismo — scelta opposta alla Francia del 1958.</div>
+    </div>`;
+  setTimeout(()=>{if(s.casoTab)casoTab(s.casoTab,null,true);},0);
+  return c;
+}
+
+function casoTab(i,btn,silent){
+  const s=sn(G.fase);if(!silent){s.casoTab=i;sv('casoTab',i);}
+  document.querySelectorAll('.caso-sez').forEach((el,j)=>el.className='caso-sez'+(j===i?' vis':''));
+  document.querySelectorAll('.ctb').forEach((b,j)=>b.className='ctb'+(j===i?' on':''));
+}
+
+// ── Sezioni visibili ──
+function aggiornaSezioni(s){
+  const ids=['card-bsdoc','card-mappaviz','card-spieg','card-spieg2','card-eserc','card-cloze','card-fc','card-caso','card-quad','card-chius',
+    'card-ripasso','card-autoval'];
+  const show=s.bs.docShown;
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){if(show)el.classList.remove('hidden');else el.classList.add('hidden');}
+  });
+  if(show){
+    const s2=sn(G.fase);
+    const data=QUAD['g'+(G.fase+1)];
+    if(data)aggiornaQuadUnlock(s2,data);
+  }
+}
+
+// ── Utility ──
+function mk(cls){const d=document.createElement('div');d.className=cls;return d;}
+
+// ═══════════════════════════════════════════
+// GIORNO 1 — Lo Stato
+// ═══════════════════════════════════════════
+function renderG1(el){
+  const s=sn(0);
+  const mappaHtml=`
+    <div class="mv-row"><div class="mv-nodo mv-c">STATO</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:6px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">👥 Popolo</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">Cittadini con diritti e doveri</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">🌍 Territorio</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">Terra, mare, spazio aereo</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">⚖️ Sovranità</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">Potere supremo di governare</div>
+      </div>
+    </div>
+    <div class="mv-lv"></div>
+    <div class="mv-row"><div class="mv-nodo mv-g">📋 Forma di Stato = chi detiene il potere?</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:8px;">
+      <div class="mv-nodo" style="font-size:.8rem;">🏛️ Democratico</div>
+      <div class="mv-nodo" style="font-size:.8rem;">👑 Monarchico</div>
+      <div class="mv-nodo" style="font-size:.8rem;">🎯 Totalitario</div>
+    </div>`;
+  const spiegHtml=`
+    <div class="th">Cos'è uno Stato?</div>
+    <p class="tp">Uno Stato esiste quando si verificano <strong>tre condizioni contemporaneamente</strong>: un <span class="ev">popolo</span>, un <span class="ev">territorio</span> definito, e la <span class="ev">sovranità</span> — il potere supremo di governare senza dipendere da altri. Se manca anche uno solo di questi elementi, non si parla di Stato in senso giuridico.</p>
+    <div class="th">Forma di Stato vs Forma di Governo</div>
+    <p class="tp">La <strong>forma di Stato</strong> risponde a: <em>chi detiene il potere e qual è il rapporto tra Stato e cittadini?</em></p>
+    <p class="tp">La <strong>forma di governo</strong> risponde a: <em>come è organizzato il potere tra gli organi dello Stato?</em> — cioè come interagiscono parlamento, governo e presidente.</p>
+    <div class="qt">«La differenza tra forma di Stato e forma di governo è come la differenza tra le regole di una gara e chi la gestisce: una riguarda il sistema, l'altra chi lo guida.»</div>
+    <div class="callout ci">Domani approfondiremo le forme di Stato: democratica, totalitaria e monarchica.</div>`;
+
+  el.appendChild(mkApertura(0));
+  el.appendChild(mkBs(s,0));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkMappaDoc(s,mappaHtml));
+  el.appendChild(mkSpieg(s,spiegHtml));
+  el.appendChild(mkMappa(s,'g1'));
+  el.appendChild(mkFlashcard(s,0));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,0));
+  el.appendChild(mkChiusura(0));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g1);renderFc(s,0);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 2 — Forme di Stato
+// ═══════════════════════════════════════════
+function renderG2(el){
+  const s=sn(1);
+  const mappaHtml=`
+    <div class="mv-row"><div class="mv-nodo mv-c">FORME DI STATO</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:6px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">🏛️ Democratico</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Potere al popolo, diritti garantiti</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo" style="border-color:var(--err);background:#FFF0F0;font-size:.87rem;">🎯 Totalitario</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Potere concentrato, no libertà</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-g">👑 Monarchico</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Assoluta o Costituzionale</div>
+      </div>
+    </div>`;
+  const spiegHtml=`
+    <div class="th">Lo Stato democratico</div>
+    <p class="tp">Nello Stato democratico il <span class="ev">potere appartiene al popolo</span>, che lo esercita tramite elezioni libere e periodiche. I diritti fondamentali dei cittadini sono garantiti e il potere è diviso tra più organi (parlamento, governo, magistratura) per evitare abusi.</p>
+    <div class="th">Lo Stato totalitario</div>
+    <p class="tp">Nello Stato totalitario tutto il potere è concentrato in <span class="ev">un solo soggetto o partito</span>. Le libertà civili sono soppresse, l'opposizione è vietata e i mezzi di comunicazione sono controllati dallo Stato. Esempi storici: il fascismo italiano (1922–1943), il nazismo tedesco (1933–1945).</p>
+    <div class="th">La monarchia: assoluta vs costituzionale</div>
+    <p class="tp">Nella <strong>monarchia assoluta</strong> il re ha potere illimitato — decide leggi, giustizia e governo senza controlli. Nella <strong>monarchia costituzionale</strong> il potere del re è limitato da una Costituzione e da un parlamento eletto. Esempio attuale: Regno Unito.</p>
+    <div class="callout ci">Domani vedremo come il potere è <em>organizzato</em> all'interno dello Stato: le forme di governo.</div>`;
+
+  el.appendChild(mkApertura(1));
+  el.appendChild(mkBs(s,1));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkMappaDoc(s,mappaHtml));
+  el.appendChild(mkSpieg(s,spiegHtml));
+  el.appendChild(mkMappa(s,'g2'));
+  el.appendChild(mkFlashcard(s,1));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,1));
+  el.appendChild(mkChiusura(1));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g2);renderFc(s,1);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 3 — Governo Parlamentare
+// ═══════════════════════════════════════════
+function renderG3(el){
+  const s=sn(2);
+  const mappaHtml=`
+    <div class="mv-row"><div class="mv-nodo mv-c">GOVERNO PARLAMENTARE</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:6px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">🗳️ Parlamento</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Eletto dai cittadini — organo centrale</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">⚙️ Governo</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Deve avere la fiducia del Parlamento</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-g">🎩 Presidente</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Ruolo cerimoniale e di garanzia</div>
+      </div>
+    </div>
+    <div class="mv-lv"></div>
+    <div class="mv-row"><div class="mv-nodo" style="font-size:.82rem;background:var(--bg);">Esempio: Italia 🇮🇹</div></div>`;
+  const spiegHtml=`
+    <div class="th">Il governo parlamentare</div>
+    <p class="tp">Nel sistema parlamentare il <span class="ev">Parlamento è il centro del potere</span>. I cittadini eleggono il Parlamento, che a sua volta nomina il governo (o ne condiziona la formazione). Il governo può governare <strong>solo finché ha la fiducia del Parlamento</strong>.</p>
+    <div class="th">Il rapporto di fiducia</div>
+    <p class="tp">La <strong>fiducia</strong> è il voto con cui il Parlamento dichiara di sostenere il governo. Se il Parlamento vota la <strong>mozione di sfiducia</strong>, il governo deve dimettersi. Questo crea un legame diretto e costante tra i due organi.</p>
+    <div class="th">Il Presidente della Repubblica in Italia</div>
+    <p class="tp">In Italia il Presidente della Repubblica è <span class="ev">eletto dal Parlamento</span> (non dai cittadini direttamente) e ha un ruolo prevalentemente cerimoniale e di garanzia costituzionale. Non governa — rappresenta l'unità nazionale e garantisce il rispetto della Costituzione.</p>
+    <div class="qt">«Il parlamentarismo funziona bene quando i partiti sono disposti a costruire maggioranze stabili. Quando non lo sono, si ottiene l'instabilità della Quarta Repubblica francese.»</div>
+    <div class="callout ci">Domani confronteremo il parlamentarismo con il presidenzialismo e il semipresidenzialismo.</div>`;
+
+  el.appendChild(mkApertura(2));
+  el.appendChild(mkBs(s,2));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkMappaDoc(s,mappaHtml));
+  el.appendChild(mkSpieg(s,spiegHtml));
+  el.appendChild(mkMappa(s,'g3'));
+  el.appendChild(mkCloze(s,'g3'));
+  el.appendChild(mkFlashcard(s,2));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,2));
+  el.appendChild(mkChiusura(2));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g3);renderFc(s,2);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 4 — Presidenzialismo e Semipresidenzialismo
+// ═══════════════════════════════════════════
+function renderG4(el){
+  const s=sn(3);
+  const mappaHtml=`
+    <div class="mv-row"><div class="mv-nodo mv-c">FORME DI GOVERNO</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:6px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s">🏛️ Parlamentare</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">Italia, UK, Germania</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-g">🦅 Presidenziale</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">USA, Brasile</div>
+      </div>
+      <div class="mv-lh"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo" style="border-color:var(--navy);background:var(--light);font-size:.87rem;">🇫🇷 Semipresidenziale</div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:90px;">Francia</div>
+      </div>
+    </div>`;
+  const spiegHtml=`
+    <div class="th">Il governo presidenziale — modello USA</div>
+    <p class="tp">Nel sistema presidenziale il <span class="ev">Presidente è eletto direttamente dai cittadini</span> ed è contemporaneamente capo dello Stato e capo del governo. Il Parlamento non può sfiduciarlo (solo con l'impeachment in casi estremi) e lui non può sciogliere il Parlamento. <strong>Separazione netta dei poteri.</strong></p>
+    <div class="th">Il governo semipresidenziale — modello Francia</div>
+    <p class="tp">Il sistema semipresidenziale combina elementi dei due sistemi: il <span class="ev">Presidente è eletto direttamente</span> dai cittadini e ha poteri esecutivi reali (politica estera, difesa, può sciogliere il Parlamento), ma esiste anche un <strong>Primo Ministro</strong> responsabile davanti al Parlamento per la politica interna.</p>
+    <div class="th">La coabitazione</div>
+    <p class="tp">In Francia può verificarsi la <strong>coabitazione</strong>: il Presidente e il Primo Ministro appartengono a schieramenti politici diversi. Questo crea una tensione strutturale ma non blocca il sistema.</p>
+    <div class="callout ci">Domani applichiamo tutto questo al caso concreto della Francia: dalla Quarta alla Quinta Repubblica.</div>`;
+
+  el.appendChild(mkApertura(3));
+  el.appendChild(mkBs(s,3));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkMappaDoc(s,mappaHtml));
+  el.appendChild(mkSpieg(s,spiegHtml));
+  el.appendChild(mkMappa(s,'g4'));
+  el.appendChild(mkCloze(s,'g4'));
+  el.appendChild(mkFlashcard(s,3));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,3));
+  el.appendChild(mkChiusura(3));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g4);renderFc(s,3);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 5 — Caso Francia
+// ═══════════════════════════════════════════
+function renderG5(el){
+  const s=sn(4);
+  const mappaHtml=`
+    <div class="mv-row"><div class="mv-nodo mv-c">🇫🇷 FRANCIA — STORIA COSTITUZIONALE</div></div>
+    <div class="mv-lv"></div>
+    <div class="mv-row" style="gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo" style="border-color:var(--err);background:#FFF0F0;font-size:.85rem;">IV Repubblica<br><small>1946–1958</small></div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">25 governi, instabilità</div>
+      </div>
+      <div style="font-size:1.4rem;color:var(--gold);align-self:center;">→</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-g" style="font-size:.85rem;">De Gaulle<br><small>1958</small></div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Nuova Costituzione</div>
+      </div>
+      <div style="font-size:1.4rem;color:var(--gold);align-self:center;">→</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="mv-nodo mv-s" style="font-size:.85rem;">V Repubblica<br><small>1958–oggi</small></div>
+        <div style="font-size:.72rem;color:var(--gray);text-align:center;max-width:100px;">Semipresidenzialismo stabile</div>
+      </div>
+    </div>`;
+  const spiegHtml=`
+    <div class="th">La crisi della Quarta Repubblica</div>
+    <p class="tp">La Quarta Repubblica (1946–1958) era un sistema parlamentare in cui il Parlamento aveva tutto il potere ma non riusciva a costruire maggioranze stabili. In <span class="ev">12 anni si avvicendarono 25 governi</span>. La durata media di un governo era inferiore a 6 mesi.</p>
+    <p class="tp">Il problema esplose con la guerra d'Algeria (1954–1962): i governi che si succedevano non riuscivano a prendere decisioni decisive. Nel 1958 l'esercito minacciò un colpo di Stato.</p>
+    <div class="th">De Gaulle e la soluzione</div>
+    <p class="tp">Charles de Gaulle — generale, eroe della Resistenza, già capo del governo provvisorio nel 1944 — viene chiamato a risolvere la crisi. Accetta a una condizione: scrivere una nuova Costituzione che rafforzasse il potere esecutivo.</p>
+    <p class="tp">La nuova Costituzione (approvata per referendum nell'ottobre 1958) crea la <span class="ev">Quinta Repubblica</span>: il presidente è eletto direttamente dai cittadini (dal 1962), ha il potere di sciogliere il Parlamento e guida la politica estera e di difesa.</p>
+    <div class="th">L'eredità</div>
+    <p class="tp">De Gaulle fu il primo presidente della Quinta Repubblica (1958–1969). Il sistema che creò è ancora in vigore oggi. È uno degli esempi più studiati al mondo di riforma costituzionale riuscita.</p>`;
+
+  el.appendChild(mkApertura(4));
+  el.appendChild(mkBs(s,4));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkMappaDoc(s,mappaHtml));
+  el.appendChild(mkSpieg(s,spiegHtml));
+  el.appendChild(mkMappa(s,'g5'));
+  el.appendChild(mkCloze(s,'g5'));
+  el.appendChild(mkFlashcard(s,4));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,4));
+  el.appendChild(mkChiusura(4));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g5);renderFc(s,4);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 6 — Italia vs Francia, sintesi
+// ═══════════════════════════════════════════
+function renderG6(el){
+  const s=sn(5);
+  const spiegHtml=`
+    <div class="th">Perché l'Italia scelse il parlamentarismo nel 1948?</div>
+    <p class="tp">I padri costituenti italiani avevano vissuto il fascismo: un regime in cui il potere esecutivo era diventato illimitato. La scelta del parlamentarismo fu <span class="ev">intenzionalmente precauzionale</span>: meglio un sistema più lento e controllato che un esecutivo forte che potesse diventare autoritario.</p>
+    <div class="th">Il confronto oggi</div>
+    <table class="tab-cf">
+      <tr><th></th><th>🇮🇹 Italia</th><th>🇫🇷 Francia</th></tr>
+      <tr><td>Sistema</td><td>Parlamentare</td><td>Semipresidenziale</td></tr>
+      <tr><td>Chi elegge il capo</td><td>Parlamento</td><td>Cittadini (direttamente)</td></tr>
+      <tr><td>Poteri del Presidente</td><td>Limitati, cerimoniali</td><td>Reali: estera, difesa, scioglimento</td></tr>
+      <tr><td>Primo Ministro</td><td>Presidente del Consiglio</td><td>Premier (responsabile al Parlamento)</td></tr>
+      <tr><td>Stabilità storica</td><td>60+ governi dal 1946</td><td>Stabile dal 1958</td></tr>
+    </table>
+    <div class="th">Qual è il sistema migliore?</div>
+    <p class="tp">Non esiste un sistema perfetto. Il presidenzialismo garantisce stabilità ma concentra il potere. Il parlamentarismo garantisce controllo ma può produrre instabilità. Il semipresidenzialismo cerca un equilibrio, ma richiede che il Presidente usi il potere con responsabilità.</p>
+    <div class="callout ci">Domani — Giorno 7 — fai il ripasso finale. Rivedrai tutti i concetti su cui hai fatto più errori.</div>`;
+
+  el.appendChild(mkApertura(5));
+  el.appendChild(mkBs(s,5));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkSpieg(s,spiegHtml,'card-spieg'));
+  el.appendChild(mkMappa(s,'g6'));
+  el.appendChild(mkFlashcard(s,5));
+  el.appendChild(mkCaso(s));
+  el.appendChild(mkQuaderno(s,5));
+  el.appendChild(mkChiusura(5));
+  setTimeout(()=>{aggiornaSezioni(s);renderNodi(s,NODI.g6);renderFc(s,5);},0);
+}
+
+// ═══════════════════════════════════════════
+// GIORNO 7 — Ripasso adattivo
+// ═══════════════════════════════════════════
+function renderG7(el){
+  const s=sn(6);
+  el.appendChild(mkApertura(6));
+  el.appendChild(mkBs(s,6));
+  el.appendChild(mkBsDoc(s));
+  el.appendChild(mkRipasso(s));
+  el.appendChild(mkAutoval(s));
+  el.appendChild(mkFlashcard(s,6));
+  el.appendChild(mkQuaderno(s,6));
+  el.appendChild(mkChiusura(6));
+  setTimeout(()=>{aggiornaSezioni(s);renderFc(s,6);},0);
+}
+
+function mkRipasso(s){
+  const c=mk('card hidden');c.id='card-ripasso';
+  loadErr();
+  const errori=G.errori.sort((a,b)=>b.tentativiErrati-a.tentativiErrati);
+
+  if(!errori.length){
+    c.innerHTML=`<div class="card-title"><div class="c-icon">🔁</div>Ripasso adattivo</div>
+      <div class="callout co">🎉 Nessun errore nei giorni precedenti! Hai risposto correttamente a tutto. Rivedi le flashcard in ordine inverso come sfida aggiuntiva.</div>`;
+    return c;
+  }
+
+  // Raccoglie le domande degli errori da tutti i nodi e cloze
+  const tutte=[...Object.values(NODI).flat(),...Object.values(CLOZE).flat()];
+  const daRipassare=errori.slice(0,6).map(e=>{
+    const n=tutte.find(q=>q.id===e.domandaId);
+    return n?{...n,errori:e.tentativiErrati}:null;
+  }).filter(Boolean);
+
+  c.innerHTML=`<div class="card-title"><div class="c-icon">🔁</div>Ripasso adattivo — le tue domande difficili</div>
+    <p class="tp mb12">Queste sono le domande su cui hai sbagliato di più. Riprova — questa volta sai già la risposta corretta.</p>
+    <div id="rip-lista"></div>
+    <div class="tr mt12"><button class="btn bo" onclick="verificaRipasso()">Verifica ripasso →</button></div>
+    <div id="rip-fb" class="mt8"></div>`;
+
+  setTimeout(()=>{
+    const el=document.getElementById('rip-lista');if(!el)return;
+    daRipassare.forEach((q,i)=>{
+      const opz=q.opz||q.scelte;if(!opz)return;
+      const div=mk('rip-q');div.id='rq-'+i;
+      const r=s.mappa['rip_'+i]||null;
+      div.innerHTML=`<div class="fl mb8"><strong>${q.pre||q.testo}</strong>${q.post||''}</div>
+        <div class="opz">${opz.map(o=>`<button class="ob${r===o?' sel':''}" onclick="selRip(${i},'${o.replace(/'/g,"\\'")}','${(q.ok).replace(/'/g,"\\'")}',this)">${o}</button>`).join('')}</div>
+        <div class="nfb" id="rfb-${i}"></div>`;
+      el.appendChild(div);
+    });
+    // salva riferimento per verifica
+    window._ripassoDomande=daRipassare;
+  },0);
+  return c;
+}
+
+function selRip(i,op,ok,btn){
+  const s=sn(G.fase);if(!s.mappa)s.mappa={};
+  s.mappa['rip_'+i]=op;sv('mappa',s.mappa);
+  const rq=document.getElementById('rq-'+i);
+  if(rq)rq.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===op?' sel':''));
+}
+
+function verificaRipasso(){
+  const domande=window._ripassoDomande||[];
+  const s=sn(G.fase);let ok=0;
+  const fb=document.getElementById('rip-fb');
+  domande.forEach((q,i)=>{
+    const r=s.mappa&&s.mappa['rip_'+i];
+    const rq=document.getElementById('rq-'+i);
+    const rf=document.getElementById('rfb-'+i);
+    if(!r){if(rq)rq.className='rip-q nko';if(rf){rf.style.color='var(--err)';rf.textContent='⚠ Scegli una risposta.';}return;}
+    const corr=r===q.ok;
+    if(rq)rq.className='rip-q '+(corr?'nok':'nko');
+    if(rq)rq.querySelectorAll('.ob').forEach(b=>{
+      if(b.textContent===q.ok)b.className='ob corr';
+      else if(b.textContent===r&&!corr)b.className='ob sba';
+    });
+    if(rf){rf.style.color=corr?'var(--ok)':'var(--err)';rf.textContent=corr?'✓ Corretto!':'✗ Risposta: "'+q.ok+'".';}
+    if(corr)ok++;
+  });
+  if(fb)fb.innerHTML=ok===domande.length
+    ?'<div class="callout co">✓ Ripasso completato alla perfezione! Sei pronto per la verifica.</div>'
+    :ok>=domande.length/2
+      ?'<div class="callout cw">'+ok+' su '+domande.length+'. Quasi! Rileggi la spiegazione dei punti sbagliati.</div>'
+      :'<div class="callout ce">'+ok+' su '+domande.length+'. Rivedi la spiegazione e riprova.</div>';
+}
+
+function mkAutoval(s){
+  const c=mk('card hidden');c.id='card-autoval';
+  const domande=[
+    {id:'av1',testo:'Quanto ti senti sicuro sui tre elementi dello Stato?'},
+    {id:'av2',testo:'Quanto ti senti sicuro sulla differenza tra forma di Stato e forma di governo?'},
+    {id:'av3',testo:'Quanto ti senti sicuro sui tre sistemi di governo (parlamentare, presidenziale, semipresidenziale)?'},
+    {id:'av4',testo:'Quanto ti senti sicuro sul caso Francia / De Gaulle?'},
+  ];
+  c.innerHTML=`<div class="card-title"><div class="c-icon">📊</div>Autovalutazione — quanto mi sento sicuro?</div>
+    <p class="tp mb12">Valuta onestamente il tuo livello di sicurezza su ogni argomento. Nessuno vede queste risposte — sii onesto con te stesso.</p>
+    ${domande.map(d=>`
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.9rem;font-weight:600;color:var(--navy);margin-bottom:8px;">${d.testo}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${['😕 Per niente','😐 Poco','🙂 Abbastanza','😊 Molto','🤩 Sicurissimo'].map((l,i)=>
+            `<button class="ob" id="av-${d.id}-${i}" onclick="selAv('${d.id}',${i})">${l}</button>`
+          ).join('')}
+        </div>
+      </div>`).join('')}
+    <div id="av-fb"></div>`;
+  return c;
+}
+
+function selAv(did,i){
+  document.querySelectorAll(`[id^="av-${did}-"]`).forEach((b,j)=>b.className='ob'+(j===i?' sel':''));
+  const s=sn(G.fase);if(!s.autoval)s.autoval={};
+  s.autoval[did]=i;sv('autoval',s.autoval);
+  // Controlla se tutte compilate
+  const tutte=document.querySelectorAll('[id^="av-"]');
+  const sels=document.querySelectorAll('[id^="av-"].sel');
+  const fb=document.getElementById('av-fb');
+  if(fb&&sels.length>=4){
+    fb.innerHTML='<div class="callout co mt8">✓ Autovalutazione completata. Questi dati ti aiuteranno a capire su cosa concentrarti nel prossimo modulo.</div>';
+  }
+}
+</script>
+</body>
+</html>
