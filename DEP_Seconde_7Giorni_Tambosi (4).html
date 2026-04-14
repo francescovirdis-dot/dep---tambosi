@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEP Seconde — ITE Tambosi</title>
+<style>
+:root{
+  --navy:#1A2340;--teal:#2DC5A2;--gold:#C9A84C;--slate:#3D5166;
+  --light:#E8F4F1;--bg:#F5F7FA;--white:#FFFFFF;--gray:#8A96A3;
+  --text:#222222;--err:#C0392B;--ok:#1A7A4A;
+  --dir:#1565C0;--dirL:#E3F2FD;--dirB:#1E88E5;
+  --eco:#6A1B9A;--ecoL:#F3E5F5;--ecoB:#8E24AA;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+#header{background:var(--navy);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+#header h1{color:var(--white);font-size:.88rem;font-weight:700;}
+#header-info{color:var(--teal);font-size:.79rem;}
+
+#stepper{background:var(--white);border-bottom:2px solid var(--light);padding:10px 16px;display:flex;align-items:center;overflow-x:auto;position:sticky;top:45px;z-index:99;}
+.step-item{display:flex;align-items:center;}
+.step-btn{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:3px 5px;cursor:not-allowed;}
+.step-btn.ok,.step-btn.curr{cursor:pointer;}
+.step-btn.curr{cursor:default;}
+.step-circle{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.77rem;border:2px solid #CDD1D9;color:var(--gray);background:var(--white);}
+.step-btn.ok .step-circle{background:var(--teal);border-color:var(--teal);color:var(--white);}
+.step-btn.curr .step-circle{background:var(--navy);border-color:var(--navy);color:var(--white);}
+.step-label{font-size:.55rem;color:var(--gray);white-space:nowrap;text-align:center;max-width:64px;}
+.step-btn.curr .step-label{color:var(--navy);font-weight:700;}
+.step-btn.ok .step-label{color:var(--teal);}
+.step-conn{width:14px;height:2px;background:#DDE1E7;flex-shrink:0;}
+.step-conn.done{background:var(--teal);}
+
+#pbar-wrap{height:4px;background:#E0E4EA;overflow:hidden;}
+#pbar{height:100%;background:var(--teal);transition:width .6s;}
+#main{max-width:820px;margin:0 auto;padding:18px 14px 100px;}
+
+/* CARD */
+.card{background:var(--white);border-radius:11px;box-shadow:0 2px 11px rgba(26,35,64,.07);padding:22px;margin-bottom:16px;}
+.card-title{font-size:.97rem;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:9px;}
+.c-icon{width:30px;height:30px;background:var(--light);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+
+/* SEZIONE WRAPPER */
+.sezione-blk{border-radius:14px;padding:3px;margin-bottom:20px;}
+.sezione-blk.dir{background:linear-gradient(135deg,var(--dirB),var(--dir));}
+.sezione-blk.eco{background:linear-gradient(135deg,var(--ecoB),var(--eco));}
+.sezione-inner{background:var(--bg);border-radius:12px;padding:16px;}
+
+.sezione-hdr{border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.sezione-hdr.dir{background:var(--dirL);border:2px solid var(--dirB);}
+.sezione-hdr.eco{background:var(--ecoL);border:2px solid var(--ecoB);}
+.sezione-hdr h2{font-size:1.05rem;font-weight:800;}
+.sezione-hdr.dir h2{color:var(--dir);}
+.sezione-hdr.eco h2{color:var(--eco);}
+.timer-pill{padding:5px 13px;border-radius:18px;font-size:.8rem;font-weight:700;}
+.timer-pill.dir{background:var(--dir);color:var(--white);}
+.timer-pill.eco{background:var(--eco);color:var(--white);}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:11px 14px;font-size:.86rem;line-height:1.6;}
+.ci{background:var(--light);border-left:4px solid var(--teal);color:var(--slate);}
+.cw{background:#FFF8E1;border-left:4px solid var(--gold);color:#7A5C00;}
+.co{background:#D4EDDA;border-left:4px solid var(--ok);color:#145224;}
+.cn{background:var(--navy);border-left:4px solid var(--teal);color:var(--white);}
+.ce{background:#F8D7DA;border-left:4px solid var(--err);color:#7a1020;}
+.cdir{background:var(--dirL);border-left:4px solid var(--dir);color:var(--dir);}
+.ceco{background:var(--ecoL);border-left:4px solid var(--eco);color:var(--eco);}
+
+/* TESTO */
+.tp{font-size:.92rem;line-height:1.77;color:#333;margin-bottom:11px;}
+.tp:last-child{margin-bottom:0;}
+.th{font-size:.94rem;font-weight:700;margin:14px 0 5px;}
+.th.dir{color:var(--dir);}
+.th.eco{color:var(--eco);}
+.ev{border-radius:4px;padding:1px 6px;font-weight:600;}
+.ev.dir{background:var(--dirL);color:var(--dir);}
+.ev.eco{background:var(--ecoL);color:var(--eco);}
+.qt{border-left:3px solid var(--gold);padding:9px 14px;margin:10px 0;font-style:italic;color:var(--slate);font-size:.88rem;}
+
+/* BOTTONI */
+.btn{padding:8px 20px;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
+.bp{background:var(--teal);color:var(--white);}
+.bn{background:var(--navy);color:var(--white);}
+.bo{background:transparent;border:2px solid var(--teal);color:var(--teal);}
+.bg{background:var(--gold);color:var(--navy);font-weight:800;}
+.bdir{background:var(--dir);color:var(--white);}
+.beco{background:var(--eco);color:var(--white);}
+.btn:disabled{opacity:.38;cursor:not-allowed;}
+
+/* BRAINSTORMING */
+.bs-row{display:flex;gap:7px;margin-bottom:7px;}
+.bs-row input{flex:1;padding:8px 12px;border:2px solid #DDE1E7;border-radius:8px;font-size:.93rem;font-family:inherit;}
+.bs-row input:focus{outline:none;border-color:var(--teal);}
+#bs-fb-dir,#bs-fb-eco{font-size:.82rem;min-height:17px;margin-bottom:7px;font-weight:600;}
+.sog-wrap{height:4px;background:#E0E4EA;border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.sog-bar{height:100%;background:var(--teal);border-radius:3px;transition:width .4s;}
+.bs-cnt{font-size:.76rem;color:var(--gray);margin-bottom:9px;}
+.bs-tags{min-height:36px;display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg);border-radius:8px;border:1px dashed #CDD1D9;margin-bottom:8px;}
+.bs-tag{display:inline-block;padding:3px 10px;border-radius:14px;background:var(--teal);color:var(--white);font-size:.8rem;font-weight:700;}
+
+/* WORD CLOUD */
+.wc-wrap{display:none;margin-top:10px;}
+.wc-canvas{width:100%;min-height:160px;background:var(--navy);border-radius:10px;padding:18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;}
+.wc-word{display:inline-block;border-radius:6px;padding:4px 10px;font-weight:700;cursor:default;}
+.wc-chiave{background:var(--gold);color:var(--navy);}
+.wc-comune{background:var(--teal);color:var(--white);}
+.wc-raro{background:#3D5166;color:#CDD1D9;}
+.wc-legenda{font-size:.76rem;color:var(--gray);margin-top:7px;text-align:center;}
+.wc-confronto{font-size:.86rem;color:var(--slate);margin-top:9px;padding:9px 13px;background:var(--bg);border-radius:8px;border:1px dashed #CDD1D9;}
+
+/* MAPPE SVG */
+.mappa-svg-wrap{background:var(--bg);border-radius:10px;padding:14px;margin:10px 0;overflow-x:auto;}
+.mappa-svg-wrap svg{display:block;margin:0 auto;}
+
+/* NODI LACUNOSI */
+.nl{background:var(--bg);border-radius:9px;padding:14px;margin-bottom:11px;border:2px solid #E0E4EA;}
+.nl.nok{border-color:var(--ok);background:#D4EDDA14;}
+.nl.nko{border-color:var(--err);background:#F8D7DA14;}
+.fl{font-size:.93rem;line-height:1.8;color:var(--navy);font-weight:500;margin-bottom:9px;}
+.bw{color:var(--teal);font-weight:700;border-bottom:2px solid var(--teal);padding:0 3px;}
+.opz{display:flex;flex-wrap:wrap;gap:6px;}
+.ob{padding:5px 12px;border:2px solid #DDE1E7;border-radius:15px;background:var(--white);font-size:.85rem;cursor:pointer;font-family:inherit;transition:all .2s;color:var(--text);}
+.ob:hover{border-color:var(--teal);color:var(--teal);}
+.ob.sel{border-color:var(--navy);background:var(--navy);color:var(--white);}
+.ob.corr{border-color:var(--ok);background:var(--ok);color:var(--white);}
+.ob.sba{border-color:var(--err);background:var(--err);color:var(--white);}
+.nfb{margin-top:6px;font-size:.8rem;font-weight:600;min-height:13px;}
+
+/* CLOZE */
+.cloze-q{background:var(--bg);border-radius:9px;padding:14px;margin-bottom:11px;border:2px solid #E0E4EA;}
+.cloze-q.nok{border-color:var(--ok);}
+.cloze-q.nko{border-color:var(--err);}
+.cloze-testo{font-size:.91rem;line-height:1.7;margin-bottom:9px;color:var(--navy);}
+
+/* FLASHCARD */
+.fc-wrap{margin-bottom:11px;}
+.fc{width:100%;cursor:pointer;}
+.fcf,.fcb{width:100%;min-height:138px;border-radius:9px;padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;}
+.fcf{background:var(--navy);color:var(--white);font-size:.95rem;font-weight:600;border:3px solid var(--teal);}
+.fcf.dir{border-color:var(--dir);}
+.fcf.eco{border-color:var(--eco);}
+.fcb{background:var(--light);color:var(--navy);font-size:.87rem;line-height:1.6;border:3px solid var(--teal);display:none;}
+.fcb.dir{background:var(--dirL);border-color:var(--dir);}
+.fcb.eco{background:var(--ecoL);border-color:var(--eco);}
+.fc.flip .fcf{display:none;}
+.fc.flip .fcb{display:flex;}
+.fcb-inner{width:100%;text-align:center;}
+.fc-hint{display:block;text-align:right;font-size:.66rem;opacity:.45;margin-top:5px;}
+.fc-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.fc-stato{display:flex;gap:7px;margin-top:9px;}
+.fc-stato button{flex:1;padding:7px;border-radius:7px;border:none;font-family:inherit;font-size:.81rem;font-weight:700;cursor:pointer;}
+.fsok{background:var(--ok);color:var(--white);}
+.fsrip{background:#E0E4EA;color:var(--slate);}
+.fc-mat{display:inline-block;padding:2px 7px;border-radius:9px;font-size:.68rem;font-weight:700;margin-bottom:5px;}
+.fc-mat-dir{background:var(--dirL);color:var(--dir);}
+.fc-mat-eco{background:var(--ecoL);color:var(--eco);}
+
+/* QUADERNO */
+.quad-step{background:var(--bg);border-radius:9px;padding:13px;margin-bottom:9px;border:2px solid #E0E4EA;}
+.quad-step.done{border-color:var(--ok);background:#D4EDDA14;}
+.quad-step.dir-s{border-left:4px solid var(--dir);}
+.quad-step.eco-s{border-left:4px solid var(--eco);}
+.quad-step-hdr{display:flex;align-items:flex-start;gap:9px;}
+.qchk{width:21px;height:21px;border-radius:5px;border:2px solid #CDD1D9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.76rem;flex-shrink:0;margin-top:1px;}
+.qchk.on{background:var(--ok);border-color:var(--ok);color:var(--white);}
+.quad-body{flex:1;}
+.quad-title{font-weight:700;font-size:.87rem;color:var(--navy);margin-bottom:3px;}
+.quad-desc{font-size:.82rem;color:var(--slate);line-height:1.53;}
+.quad-desc strong{color:var(--navy);}
+.quad-schema{background:var(--navy);border-radius:7px;padding:11px;margin-top:7px;font-family:'Courier New',monospace;font-size:.72rem;color:var(--teal);line-height:1.63;white-space:pre;}
+.quad-unlock{margin-top:12px;padding:12px;background:var(--light);border-radius:8px;border:2px dashed var(--teal);text-align:center;}
+.quad-mancano{font-size:.79rem;color:var(--err);font-weight:700;margin-top:4px;}
+
+/* CASO */
+.caso-hdr{background:linear-gradient(135deg,var(--navy),#2C3E6B);border-radius:9px;padding:16px;color:var(--white);margin-bottom:11px;}
+.caso-tabs{display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap;}
+.ctb{padding:5px 12px;border-radius:14px;border:2px solid #DDE1E7;background:var(--white);font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;color:var(--slate);}
+.ctb.on{background:var(--navy);color:var(--white);border-color:var(--navy);}
+.caso-sez{display:none;}
+.caso-sez.vis{display:block;}
+
+.tab-cf{width:100%;border-collapse:collapse;font-size:.83rem;margin:9px 0;}
+.tab-cf th{background:var(--navy);color:var(--white);padding:8px 10px;text-align:left;}
+.tab-cf td{padding:7px 10px;border-bottom:1px solid #EEE;vertical-align:top;}
+.tab-cf tr:nth-child(even) td{background:var(--bg);}
+
+/* MOTIV */
+.motiv{text-align:center;padding:14px 10px;}
+.motiv .em{font-size:2.1rem;margin-bottom:7px;}
+.motiv p{font-size:.96rem;color:var(--navy);font-weight:500;line-height:1.6;max-width:490px;margin:0 auto;}
+.perc{display:inline-block;background:var(--navy);color:var(--teal);font-size:1.75rem;font-weight:900;padding:9px 22px;border-radius:9px;margin-bottom:11px;letter-spacing:.04em;}
+
+/* RIPASSO */
+.rip-q{background:var(--bg);border-radius:9px;padding:14px;margin-bottom:11px;border:2px solid #E0E4EA;}
+.rip-q.nok{border-color:var(--ok);}
+.rip-q.nko{border-color:var(--err);}
+
+/* LOGIN */
+#screen-login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);padding:18px;}
+.lb{background:var(--white);border-radius:14px;padding:36px 32px;max-width:410px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.3);}
+.l-sig{font-size:1.9rem;font-weight:900;color:var(--navy);text-align:center;}
+.l-sub{font-size:.78rem;color:var(--gray);text-align:center;margin-top:3px;margin-bottom:22px;}
+.l-av{background:var(--light);border-left:4px solid var(--teal);padding:9px 12px;border-radius:0 8px 8px 0;font-size:.77rem;color:var(--slate);line-height:1.5;margin-bottom:18px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-weight:600;font-size:.78rem;color:var(--slate);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.fg input,.fg select{width:100%;padding:8px 12px;border:2px solid #DDE1E7;border-radius:8px;font-size:.95rem;font-family:inherit;}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--teal);}
+.ferr{color:var(--err);font-size:.78rem;margin-top:3px;min-height:13px;}
+
+.hidden{display:none!important;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt16{margin-top:16px;}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}
+.tr{text-align:right;}.tc{text-align:center;}
+.sep{height:1px;background:#EAEAEA;margin:14px 0;}
+.badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:.73rem;font-weight:700;}
+.bdg-new{background:var(--teal);color:var(--white);}
+</style>
+</head>
+<body>
+
+<div id="screen-login">
+  <div class="lb">
+    <div class="l-sig">DEP</div>
+    <div class="l-sub">Diritto e Economia Politica — Classi Seconde — ITE Tambosi</div>
+    <div class="l-av">⚠ I progressi vengono salvati <strong>su questo dispositivo e questo browser</strong>.</div>
+    <div class="fg"><label>Il tuo nome</label><input type="text" id="inp-nome" placeholder="Nome e Cognome" maxlength="40" autocomplete="off"><div class="ferr" id="ferr-nome"></div></div>
+    <div class="fg"><label>La tua classe</label>
+      <select id="inp-classe">
+        <option value="">— Seleziona —</option>
+        <option value="2AC">2AC</option><option value="2AD">2AD</option>
+        <option value="2AF">2AF</option><option value="2AH">2AH</option>
+      </select>
+      <div class="ferr" id="ferr-classe"></div>
+    </div>
+    <button class="btn bp" style="width:100%;margin-top:7px;" onclick="doLogin()">Inizia il percorso →</button>
+  </div>
+</div>
+
+<div id="screen-app" class="hidden">
+  <div id="header"><h1>📘 DEP Seconde — ITE Tambosi</h1><span id="header-info"></span></div>
+  <div id="stepper"></div>
+  <div id="pbar-wrap"><div id="pbar" style="width:0%"></div></div>
+  <div id="main"><div id="contenuto"></div></div>
+</div>
+
+<script>
+// ═══════════════════════════
+// CONFIG & STATO
+// ═══════════════════════════
+const CFG={gasUrl:'https://script.google.com/macros/s/AKfycbwHMm5W6Ub78opV374GODeT2TX2j0Z-4wSYv1VFLCWsi9MWKLnQX0zqiFAateYXPHfk5w/exec'};
+const BS_MIN=3;
+const G={nome:'',classe:'',mod:'mod2sec',fase:0,stati:[],errori:[]};
+const FL=['G1','G2','G3','G4','G5','G6','G7'];
+const FL_LABEL=['Enti+PIL','Comune+Smith','Prov.+Ricardo/Malthus','Regione+Keynes','PA Trento+Friedman','Sintesi+Eco.Circolare','Ripasso'];
+const PERC=['14%','28%','42%','57%','71%','85%','100%'];
+
+// ═══════════════════════════
+// WORD CLOUD (separati per materia e per giorno)
+// ═══════════════════════════
+const WC_DIR={
+  g1:{chiave:['Ente locale','Sussidiarietà','Autonomia'],comuni:['Comune','Provincia','Regione','Stato','Decentramento','Competenze','Territorio'],raro:['Sussidiarietà verticale','Decentramento amministrativo','Ente pubblico']},
+  g2:{chiave:['Sindaco','Giunta Comunale','Consiglio Comunale'],comuni:['Comune','Anagrafe','Urbanistica','Servizi sociali','Delibera','Bilancio','Polizia municipale'],raro:['Stato civile','Municipio','Edilizia pubblica']},
+  g3:{chiave:['Ente di II livello','Città Metropolitana','Riforma 2014'],comuni:['Provincia','Strade provinciali','Edilizia scolastica','Capoluogo','Legge Delrio','Ambiente'],raro:['Ente intermedio','Area vasta','Metropolitano']},
+  g4:{chiave:['Regione','Statuto speciale','Autonomia legislativa'],comuni:['Consiglio regionale','Sanità','Istruzione','Pianificazione','Statuto ordinario','Competenza'],raro:['Potestà legislativa','Autonomia fiscale','Titolo V']},
+  g5:{chiave:['PA di Trento','90% delle tasse','Statuto 1972'],comuni:['Autonomia speciale','Trentino','UniTrento','Sanità locale','Minoranza linguistica','Alto Adige'],raro:['ASTAT','Degasperi','Accordo Gruber-De Gasperi']},
+  g6:{chiave:['Federalismo fiscale','IMU','Responsabilità locale'],comuni:['Tasse locali','Trasferimenti statali','TARI','Enti locali','Bilancio','Autonomia finanziaria'],raro:['Patto di stabilità','Perequazione','Entrate tributarie']},
+  g7:{chiave:['Sussidiarietà','Autonomia','Enti locali'],comuni:['Comune','Provincia','Regione','PA Trento','Sindaco','Federalismo'],raro:['Statuto speciale','Città metropolitana','Decentramento']},
+};
+const WC_ECO={
+  g1:{chiave:['PIL','Crescita economica','Mercantilismo'],comuni:['Oro','Argento','Esportazioni','Importazioni','Dazi','Colonie','Rivoluzione industriale'],raro:['Bilancia commerciale','Bullionismo','Prodotto Interno Lordo']},
+  g2:{chiave:['Mano invisibile','Divisione del lavoro','Libero mercato'],comuni:['Smith','Interesse personale','Benessere collettivo','Produttività','Specializzazione','Concorrenza','Salario'],raro:['Laissez-faire','Ricchezza delle nazioni','Utilitarismo']},
+  g3:{chiave:['Ricardo','Vantaggio comparato','Malthus'],comuni:['Specializzazione','Commercio internazionale','Limiti naturali','Rendimento decrescente','Popolazione','Alimenti','Risorse'],raro:['Rendita fondiaria','Progressione geometrica','Stato stazionario']},
+  g4:{chiave:['Keynes','Intervento dello Stato','Moltiplicatore'],comuni:['Crisi','Spesa pubblica','Domanda aggregata','Disoccupazione','Deficit','Investimento','New Deal'],raro:['Trappola della liquidità','Animal spirits','Paradosso del risparmio']},
+  g5:{chiave:['Friedman','Monetarismo','Sviluppo sostenibile'],comuni:['Moneta','Inflazione','Libertà economica','Stato minimo','Agenda 2030','Brundtland','Sostenibilità'],raro:['Regola monetaria','Aspettative razionali','Nairu']},
+  g6:{chiave:['Economia circolare','Crisi 2008','Mutui subprime'],comuni:['Lehman Brothers','Cartolarizzazione','Riciclo','Riuso','Spreco','Emissioni','Economia lineare'],raro:['Toxic assets','Quantitative easing','Carbonio']},
+  g7:{chiave:['PIL','Crescita economica','Economia circolare'],comuni:['Smith','Ricardo','Keynes','Friedman','Sviluppo sostenibile','Mercantilismo','Crisi'],raro:['Vantaggio comparato','Moltiplicatore','Malthus']},
+};
+
+// ═══════════════════════════
+// FLASHCARD
+// ═══════════════════════════
+const FC_DIR=[
+  {id:'fd1',g:1,d:'Cosa sono gli enti locali?',r:'Enti pubblici territoriali che esercitano funzioni amministrative locali. I principali sono Comuni, Province, Città Metropolitane e Regioni.'},
+  {id:'fd2',g:1,d:'Cos\'è il principio di sussidiarietà?',r:'Le funzioni pubbliche vanno svolte dall\'ente più vicino al cittadino capace di svolgerle. Solo se non è adeguato, interviene l\'ente superiore.'},
+  {id:'fd3',g:2,d:'Quali sono gli organi del Comune?',r:'Consiglio Comunale (legislativo, eletto dai cittadini), Giunta Comunale (esecutivo), Sindaco (eletto direttamente dai cittadini).'},
+  {id:'fd4',g:2,d:'Tre funzioni principali del Comune?',r:'Anagrafe e stato civile, edilizia e urbanistica, servizi sociali. Ma anche: scuole dell\'infanzia e primarie, trasporto locale, polizia municipale.'},
+  {id:'fd5',g:3,d:'Cosa fa la Provincia dopo la riforma 2014?',r:'È ente di secondo livello (presidente non eletto direttamente). Si occupa di strade provinciali, edilizia scolastica superiore, ambiente e difesa del suolo.'},
+  {id:'fd6',g:3,d:'Cos\'è la Città Metropolitana?',r:'Ha sostituito la Provincia nelle 14 principali città italiane. Il Sindaco metropolitano è il sindaco del capoluogo. Coordina i servizi dell\'area urbana allargata.'},
+  {id:'fd7',g:4,d:'Differenza tra Regione ordinaria e speciale?',r:'Le 15 ordinarie hanno autonomia limitata. Le 5 speciali (Sicilia, Sardegna, VdA, FVG, Trentino-AA) hanno autonomia legislativa e fiscale molto più ampia, garantita dalla Costituzione.'},
+  {id:'fd8',g:4,d:'Competenze principali della Regione?',r:'Sanità, indirizzi dell\'istruzione, trasporti regionali, pianificazione territoriale, turismo, agricoltura, formazione professionale.'},
+  {id:'fd9',g:5,d:'Cos\'è la Provincia Autonoma di Trento?',r:'Ente unico nel panorama italiano con autonomia speciale costituzionale. Trattiene ~90% delle tasse locali. Può legiferare su sanità, istruzione, strade, università.'},
+  {id:'fd10',g:5,d:'Perché il Trentino ha l\'autonomia speciale?',r:'Ragioni storiche (fu parte dell\'Austria fino al 1918) e tutela della minoranza linguistica tedesca. Lo Statuto del 1972 ne ha formalizzato l\'autonomia.'},
+  {id:'fd11',g:6,d:'Cos\'è il federalismo fiscale?',r:'Il principio per cui gli enti locali si finanziano con proprie risorse invece di dipendere dai trasferimenti statali. Chi spende i soldi deve anche raccoglierli.'},
+  {id:'fd12',g:6,d:'Differenza tra IMU e TARI?',r:'L\'IMU (Imposta Municipale Propria) si paga sugli immobili. La TARI (Tassa sui Rifiuti) finanzia il servizio di raccolta e smaltimento dei rifiuti. Entrambe vanno ai Comuni.'},
+];
+const FC_ECO=[
+  {id:'fe1',g:1,d:'Cos\'è il PIL?',r:'Prodotto Interno Lordo: la somma del valore di tutti i beni e servizi prodotti in un Paese in un anno. È la misura principale della ricchezza di un Paese. Inventato da Simon Kuznets negli anni \'30 per misurare la Grande Depressione.'},
+  {id:'fe2',g:1,d:'Cos\'è la crescita economica?',r:'L\'incremento del PIL nel tempo. È un fenomeno recente nella storia dell\'umanità: per secoli i livelli di produzione sono rimasti stabili. La Rivoluzione industriale (fine \'700) ha dato inizio alla crescita sostenuta.'},
+  {id:'fe3',g:2,d:'Cos\'è la mano invisibile di Smith?',r:'In un mercato libero, ogni individuo che persegue il proprio interesse personale contribuisce — senza volerlo — al benessere collettivo. Il mercato si regola da solo senza bisogno di intervento dello Stato.'},
+  {id:'fe4',g:2,d:'Cos\'è la divisione del lavoro secondo Smith?',r:'Specializzare ogni lavoratore in una sola operazione aumenta enormemente la produttività. Smith la dimostrò con la fabbrica di spilli: 10 operai specializzati producono 48.000 spilli al giorno invece di 10.'},
+  {id:'fe5',g:3,d:'Cos\'è il vantaggio comparato di Ricardo?',r:'Anche se un Paese è meno efficiente in tutto, conviene specializzarsi in ciò che produce relativamente meglio e commerciare con gli altri. Il commercio internazionale crea vantaggio per tutti i partecipanti.'},
+  {id:'fe6',g:3,d:'Cosa sosteneva Malthus sui limiti naturali?',r:'La popolazione cresce in progressione geometrica (2,4,8,16...) mentre la produzione di alimenti cresce in progressione aritmetica (2,4,6,8...). Esistono limiti naturali alla crescita economica che possono portare a conflitti e carestie.'},
+  {id:'fe7',g:4,d:'Cos\'è il moltiplicatore keynesiano?',r:'Ogni euro di spesa pubblica genera più di un euro di PIL aggiuntivo perché si moltiplica nell\'economia. Se lo Stato spende 100€, i lavoratori li ricevono, li spendono, altri li ricevono e li rispendono... l\'effetto finale è maggiore dell\'investimento iniziale.'},
+  {id:'fe8',g:4,d:'Quando si applica la teoria di Keynes?',r:'In periodi di crisi economica, quando la domanda privata è insufficiente. Lo Stato deve intervenire con spesa pubblica (opere pubbliche, sussidi) per rilanciare l\'economia. Roosevelt lo applicò con il New Deal negli USA dopo il 1929.'},
+  {id:'fe9',g:5,d:'Cos\'è il monetarismo di Friedman?',r:'La politica monetaria (controllo della quantità di moneta) è più efficace della politica fiscale (spesa pubblica). L\'inflazione è sempre un fenomeno monetario: troppa moneta in circolazione fa salire i prezzi.'},
+  {id:'fe10',g:5,d:'Cos\'è lo sviluppo sostenibile?',r:'Dal Rapporto Brundtland (1987): uno sviluppo che soddisfa i bisogni del presente senza compromettere la possibilità delle generazioni future di soddisfare i propri. Combina crescita economica, equità sociale e sostenibilità ambientale.'},
+  {id:'fe11',g:6,d:'Cos\'è l\'economia circolare?',r:'Un modello economico che elimina i rifiuti e mantiene le risorse in uso il più a lungo possibile: estrazione → produzione → uso → raccolta → riciclo → di nuovo produzione. Si oppone all\'economia lineare (usa e getta).'},
+  {id:'fe12',g:6,d:'Differenza tra economia lineare ed economia circolare?',r:'Economia lineare: estrai risorse → produci → consumi → butti (spreco). Economia circolare: progetta per durare → ripara → ricondiziona → ricicla → riduce emissioni. Obiettivo: una società a bassa emissione di CO₂.'},
+];
+
+// ═══════════════════════════
+// NODI MAPPA LACUNOSA
+// ═══════════════════════════
+const NODI_DIR={
+  g1:[{id:'g1d1',pre:'Il principio che assegna le funzioni all\'ente più vicino al cittadino si chiama ',post:'.',opz:['sussidiarietà','autonomia','gerarchia','federalismo'],ok:'sussidiarietà'},{id:'g1d2',pre:'Gli enti locali esercitano funzioni a livello ',post:' rispetto allo Stato.',opz:['locale','nazionale','internazionale','federale'],ok:'locale'}],
+  g2:[{id:'g2d1',pre:'Il Sindaco è eletto ',post:' dai cittadini.',opz:['direttamente','indirettamente','dal Consiglio','dalla Regione'],ok:'direttamente'},{id:'g2d2',pre:'L\'organo esecutivo del Comune è la ',post:'.',opz:['Giunta Comunale','Consiglio Comunale','Prefettura','Questura'],ok:'Giunta Comunale'}],
+  g3:[{id:'g3d1',pre:'Dopo il 2014, le Province sono enti di ',post:' livello.',opz:['secondo','primo','terzo','quarto'],ok:'secondo'},{id:'g3d2',pre:'Le Città Metropolitane hanno sostituito le Province nelle ',post:' principali città italiane.',opz:['14','20','10','8'],ok:'14'}],
+  g4:[{id:'g4d1',pre:'Le Regioni a statuto speciale sono ',post:' in tutta Italia.',opz:['5','3','7','10'],ok:'5'},{id:'g4d2',pre:'Le Regioni possono legiferare nelle materie non riservate allo ',post:'.',opz:['Stato','Comune','Provincia','Parlamento'],ok:'Stato'}],
+  g5:[{id:'g5d1',pre:'La PA di Trento trattiene circa il ',post:' delle tasse raccolte.',opz:['90%','50%','30%','70%'],ok:'90%'},{id:'g5d2',pre:'Lo Statuto Speciale del Trentino è del ',post:'.',opz:['1972','1948','1960','1980'],ok:'1972'}],
+  g6:[{id:'g6d1',pre:'Il federalismo fiscale prevede che gli enti locali si finanzino con risorse ',post:'.',opz:['proprie','statali','europee','private'],ok:'proprie'},{id:'g6d2',pre:'L\'imposta locale sugli immobili si chiama ',post:'.',opz:['IMU','IVA','IRPEF','IRES'],ok:'IMU'}],
+};
+const NODI_ECO={
+  g1:[
+    {id:'g1e1',pre:'La misura del valore di tutti i beni e servizi prodotti in un Paese in un anno si chiama ',post:'.',opz:['PIL','PNL','PMI','PIB'],ok:'PIL'},
+    {id:'g1e2',pre:'La dottrina che sosteneva che la ricchezza dipendesse dall\'accumulo di oro e argento si chiama ',post:'.',opz:['mercantilismo','liberismo','keynesismo','monetarismo'],ok:'mercantilismo'},
+  ],
+  g2:[
+    {id:'g2e1',pre:'Secondo Smith, in un mercato libero ogni individuo che persegue il proprio interesse contribuisce al benessere collettivo grazie alla ',post:' invisibile.',opz:['mano','legge','forza','regola'],ok:'mano'},
+    {id:'g2e2',pre:'Smith dimostrò che specializzare i lavoratori aumenta la produttività: questa si chiama divisione del ',post:'.',opz:['lavoro','capitale','mercato','profitto'],ok:'lavoro'},
+  ],
+  g3:[
+    {id:'g3e1',pre:'Ricardo sostiene che conviene specializzarsi in ciò che si produce meglio: questo si chiama principio del vantaggio ',post:'.',opz:['comparato','assoluto','relativo','competitivo'],ok:'comparato'},
+    {id:'g3e2',pre:'Malthus sosteneva che la popolazione cresce in progressione ',post:' mentre gli alimenti crescono in progressione aritmetica.',opz:['geometrica','aritmetica','lineare','stabile'],ok:'geometrica'},
+  ],
+  g4:[
+    {id:'g4e1',pre:'Secondo Keynes, in una crisi economica deve intervenire lo ',post:' con la spesa pubblica.',opz:['Stato','mercato','banche','Comune'],ok:'Stato'},
+    {id:'g4e2',pre:'L\'effetto per cui ogni euro di spesa pubblica genera più di un euro di PIL si chiama ',post:' keynesiano.',opz:['moltiplicatore','dividendo','acceleratore','catalizzatore'],ok:'moltiplicatore'},
+  ],
+  g5:[
+    {id:'g5e1',pre:'Friedman sostiene che l\'inflazione è un fenomeno sempre ',post:'.',opz:['monetario','fiscale','politico','sociale'],ok:'monetario'},
+    {id:'g5e2',pre:'Lo sviluppo che soddisfa i bisogni del presente senza compromettere quelli delle generazioni future si chiama sviluppo ',post:'.',opz:['sostenibile','circolare','lineare','equilibrato'],ok:'sostenibile'},
+  ],
+  g6:[
+    {id:'g6e1',pre:'Il modello economico che elimina i rifiuti mantenendo le risorse in uso il più a lungo possibile si chiama economia ',post:'.',opz:['circolare','lineare','sostenibile','verde'],ok:'circolare'},
+    {id:'g6e2',pre:'Nel 2008 il fallimento di ',post:' Brothers scatenò la crisi finanziaria globale.',opz:['Lehman','Morgan','Goldman','Merrill'],ok:'Lehman'},
+  ],
+};
+
+// ═══════════════════════════
+// CLOZE
+// ═══════════════════════════
+const CLOZE_DIR={
+  g2:[{id:'cd2a',testo:'Il Consiglio Comunale è l\'organo ____ del Comune.',scelte:['legislativo','esecutivo','giudiziario','consultivo'],ok:'legislativo'}],
+  g3:[{id:'cd3a',testo:'Il presidente della Città Metropolitana coincide con il sindaco del ____.',scelte:['capoluogo','quartiere','municipio','comune più grande'],ok:'capoluogo'}],
+  g4:[{id:'cd4a',testo:'Il Trentino-Alto Adige è una delle ____ Regioni a statuto speciale.',scelte:['5','3','7','10'],ok:'5'}],
+  g5:[{id:'cd5a',testo:'Il Trentino fu parte dell\'Impero ____ fino al 1918.',scelte:['Austro-Ungarico','Tedesco','Ottomano','Russo'],ok:'Austro-Ungarico'}],
+  g6:[{id:'cd6a',testo:'Il principio di ____ garantisce che le funzioni siano svolte dall\'ente più vicino ed efficiente.',scelte:['sussidiarietà','gerarchia','separazione','autonomia'],ok:'sussidiarietà'}],
+};
+const CLOZE_ECO={
+  g1:[{id:'ce1a',testo:'Se il PIL aumenta da un periodo all\'altro, si parla di ____ economica.',scelte:['crescita','recessione','stagnazione','inflazione'],ok:'crescita'}],
+  g2:[{id:'ce2a',testo:'Secondo Smith, il libero mercato si regola da solo grazie alla concorrenza e all\'interesse ____.',scelte:['personale','collettivo','pubblico','sociale'],ok:'personale'}],
+  g3:[{id:'ce3a',testo:'Malthus temeva che la produzione di ____ non riuscisse a stare al passo con la crescita della popolazione.',scelte:['alimenti','energia','materie prime','manufatti'],ok:'alimenti'}],
+  g4:[{id:'ce4a',testo:'Keynes sosteneva che in una crisi lo Stato dovesse aumentare la ____ pubblica per rilanciare l\'economia.',scelte:['spesa','tassazione','moneta','regolazione'],ok:'spesa'}],
+  g5:[{id:'ce5a',testo:'Il Rapporto ____ del 1987 ha definito per la prima volta il concetto di sviluppo sostenibile.',scelte:['Brundtland','Keynes','Ricardo','Friedman'],ok:'Brundtland'}],
+  g6:[{id:'ce6a',testo:'Nell\'economia circolare i rifiuti vengono trasformati in ____ per nuovi prodotti.',scelte:['risorse','scarti','materiali','sprechi'],ok:'risorse'}],
+};
+
+// ═══════════════════════════
+// MESSAGGI
+// ═══════════════════════════
+const MSG_AP=[
+  'Giorno 1, {nome}. Prima tutto Diritto, poi Economia. 15 minuti ciascuno — vai con metodo. Oggi: enti locali e PIL.',
+  'Bene, {nome}. Oggi Comune e Adam Smith. Due sezioni distinte: prima finisci Diritto, poi Economia.',
+  'Giorno 3, {nome}. Provincia e Ricardo. Oggi approfondisci anche Malthus e i limiti naturali della crescita.',
+  'Giorno 4, {nome}. Regioni e Keynes. Il punto di svolta del pensiero economico moderno.',
+  'Giorno 5, {nome}. PA di Trento e Friedman. Il caso trentino è perfetto per capire il dibattito Stato-mercato.',
+  'Penultimo giorno, {nome}. Sintesi e economia circolare. Il futuro dell\'economia dopo la crisi del 2008.',
+  'Ultimo giorno, {nome}. Dimostri a te stesso quanto hai capito — ripasso e autovalutazione.',
+];
+const MSG_CH=[
+  'Giorno 1 completato, {nome}. PIL e enti locali: le basi ci sono. Domani Comune e Smith.',
+  'Comune e Smith in tasca, {nome}. Domani Province, Ricardo e Malthus.',
+  'Giorno 3 fatto, {nome}. Ricardo e i limiti naturali — stai costruendo una visione completa.',
+  'Quattro giorni su sette, {nome}. Regioni e Keynes: il modulo è a metà.',
+  'Il caso trentino è tuo, {nome}. Domani la sintesi e l\'economia circolare.',
+  'Sintesi completata, {nome}. Domani è l\'ultimo giorno: dimostra quanto hai imparato.',
+  'Modulo completato, {nome}! Diritto ed economia, 7 giorni, un quaderno pieno. 🏆',
+];
+
+// ═══════════════════════════
+// QUADERNO
+// ═══════════════════════════
+const QUAD={
+  g1:{
+    intro:'Apri il quaderno. Titolo: "Mod. 2 — Lez. 1". Dividi la pagina in due colonne: DIRITTO | ECONOMIA.',
+    dir:[
+      {id:'q1d1',cl:'dir-s',t:'[DIR] Intestazione',d:'In alto a destra: data. Sotto: <strong>Diritto e Economia Politica</strong>. Titolo colonna sinistra: <strong>DIRITTO — Enti Locali</strong>',s:null},
+      {id:'q1d2',cl:'dir-s',t:'[DIR] 3 parole chiave con definizione tua',d:'• <strong>Ente locale:</strong> ...\n• <strong>Sussidiarietà:</strong> ...\n• <strong>Autonomia:</strong> ...',s:null},
+      {id:'q1d3',cl:'dir-s',t:'[DIR] Schema da copiare',d:'Copia nella colonna sinistra:',s:`    STATO
+      │
+ ┌────┼────┐
+ ▼    ▼    ▼
+REG. PROV. COM.
+     ↑
+principio di
+sussidiarietà`},
+    ],
+    eco:[
+      {id:'q1e1',cl:'eco-s',t:'[ECO] 2 parole chiave con definizione tua',d:'Colonna destra:\n• <strong>Mercantilismo:</strong> ...\n• <strong>Dazio doganale:</strong> ...',s:null},
+      {id:'q1e2',cl:'eco-s',t:'[ECO] Linea del tempo + PIL',d:'Traccia una linea e scrivi:\\n1500 → Mercantilismo (oro = ricchezza)\\n1776 → (lascia spazio)\\n... (completerai nei giorni seguenti)\\n\\nDefinizione PIL con parole tue: PIL = ...',s:null},
+      {id:'q1e3',cl:'',t:'Domanda aperta (una per materia)',d:'In fondo alla pagina: una domanda sul diritto e una sull\'economia — cose che non hai ancora capito.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto del quaderno completata! Ora passa a completare Economia.',
+    motiv_eco:'Prima pagina completata! La doppia colonna è il tuo metodo per tutto il modulo. 📓',
+  },
+  g2:{
+    intro:'Seconda pagina. Stessa struttura a due colonne.',
+    dir:[
+      {id:'q2d1',cl:'dir-s',t:'[DIR] Titolo e intestazione',d:'Titolo colonna sinistra: <strong>DIRITTO — Il Comune</strong>',s:null},
+      {id:'q2d2',cl:'dir-s',t:'[DIR] Tabella organi del Comune',d:'Copia e completa:',s:`┌──────────────┬──────────────────────┐
+│ ORGANO       │ FUNZIONE             │
+├──────────────┼──────────────────────┤
+│ Sindaco      │ __________________ │
+│ Giunta Com.  │ __________________ │
+│ Consiglio C. │ __________________ │
+└──────────────┴──────────────────────┘`},
+      {id:'q2d3',cl:'dir-s',t:'[DIR] 2 funzioni del Comune con parole tue',d:'Scegli 2 funzioni e spiegale in una frase ciascuna.',s:null},
+    ],
+    eco:[
+      {id:'q2e1',cl:'eco-s',t:'[ECO] Titolo colonna destra',d:'<strong>ECONOMIA — Adam Smith</strong>',s:null},
+      {id:'q2e2',cl:'eco-s',t:'[ECO] Mano invisibile e divisione del lavoro',d:'2 frasi con parole tue su questi due concetti.',s:null},
+      {id:'q2e3',cl:'eco-s',t:'[ECO] Aggiorna la linea del tempo',d:'Aggiungi: 1776 → Smith (mano invisibile)',s:null},
+      {id:'q2e4',cl:'',t:'Domanda aperta',d:'Una per materia.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ora passa a Economia.',
+    motiv_eco:'Seconda pagina completata. Il quaderno prende forma. 💪',
+  },
+  g3:{
+    intro:'Terza pagina. Stessa struttura.',
+    dir:[
+      {id:'q3d1',cl:'dir-s',t:'[DIR] Titolo: DIRITTO — Provincia e Città Metropolitana',d:'Intestazione.',s:null},
+      {id:'q3d2',cl:'dir-s',t:'[DIR] 3 funzioni rimaste alla Provincia',d:'Elenco puntato, una frase per funzione.',s:null},
+      {id:'q3d3',cl:'dir-s',t:'[DIR] Cos\'è la Città Metropolitana',d:'1-2 frasi con parole tue.',s:null},
+    ],
+    eco:[
+      {id:'q3e1',cl:'eco-s',t:'[ECO] Titolo: ECONOMIA — Ricardo',d:'Intestazione.',s:null},
+      {id:'q3e2',cl:'eco-s',t:'[ECO] Schema vantaggio comparato',d:'Copia:',s:`Portogallo vs Inghilterra
+         | Vino | Panno
+Portogallo |  80  |  90
+Inghilterra| 120  | 100
+→ Portogallo → VINO
+→ Inghilterra → PANNO
+→ Entrambi ci guadagnano`},
+      {id:'q3e3',cl:'eco-s',t:'[ECO] Aggiorna linea del tempo + Malthus',d:'Aggiungi alla linea del tempo:\\n1817 → Ricardo: vantaggio comparato\\n1798 → Malthus: limiti naturali alla crescita\\n\\nMalthus in una frase con parole tue: ...',s:null},
+      {id:'q3e4',cl:'',t:'Domanda aperta',d:'Una per materia.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ora passa a Economia.',
+    motiv_eco:'Terza pagina completata. Stai costruendo un quaderno serio. 🏛️',
+  },
+  g4:{
+    intro:'Quarta pagina.',
+    dir:[
+      {id:'q4d1',cl:'dir-s',t:'[DIR] Titolo: DIRITTO — La Regione',d:'Intestazione.',s:null},
+      {id:'q4d2',cl:'dir-s',t:'[DIR] Tabella Ordinaria vs Speciale',d:'Copia:',s:`           │ ORDINARIA  │ SPECIALE
+───────────┼────────────┼──────────
+Autonomia  │ Limitata   │ Ampia
+Fiscalità  │ Dipende    │ ~90%
+Esempi     │ Lombardia  │ Trentino`},
+      {id:'q4d3',cl:'dir-s',t:'[DIR] 1 frase sulle Regioni speciali',d:'Con parole tue.',s:null},
+    ],
+    eco:[
+      {id:'q4e1',cl:'eco-s',t:'[ECO] Titolo: ECONOMIA — Keynes',d:'Intestazione.',s:null},
+      {id:'q4e2',cl:'eco-s',t:'[ECO] Schema keynesiano',d:'Copia:',s:`CRISI → domanda cala
+  ↓
+Stato spende (spesa pubblica)
+  ↓
+Moltiplicatore: 1€ → 2-3€
+  ↓
+Domanda riprende → crisi superata`},
+      {id:'q4e3',cl:'eco-s',t:'[ECO] Aggiorna linea del tempo',d:'Aggiungi: 1936 → Keynes (moltiplicatore)',s:null},
+      {id:'q4e4',cl:'',t:'Domanda aperta',d:'Una per materia.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ora passa a Economia.',
+    motiv_eco:'Quarta pagina completata. Sei oltre la metà. 🎯',
+  },
+  g5:{
+    intro:'Quinta pagina. Il caso concreto: il Trentino che conosci.',
+    dir:[
+      {id:'q5d1',cl:'dir-s',t:'[DIR] Titolo: DIRITTO — PA di Trento',d:'Intestazione.',s:null},
+      {id:'q5d2',cl:'dir-s',t:'[DIR] Dati chiave della PA Trento',d:'• Anno Statuto: 1972\n• Tasse trattenute: ~90%\n• Competenze: sanità, istruzione, strade, università\n• Motivo: minoranza linguistica + storia austriaca',s:null},
+      {id:'q5d3',cl:'dir-s',t:'[DIR] 1 frase sulla PA Trento con parole tue',d:'Cosa ti ha colpito di più di questa autonomia?',s:null},
+    ],
+    eco:[
+      {id:'q5e1',cl:'eco-s',t:'[ECO] Titolo: ECONOMIA — Friedman',d:'Intestazione.',s:null},
+      {id:'q5e2',cl:'eco-s',t:'[ECO] Friedman vs Keynes',d:'Copia:',s:`           KEYNES      FRIEDMAN
+Crisi →    Spendi      Non intervenire
+Stato →    Attivo      Minimo
+Rischio →  Inflazione  Debito
+Nobel →    ---         1976`},
+      {id:'q5e3',cl:'eco-s',t:'[ECO] Aggiorna linea del tempo',d:'Aggiungi: 1976 → Friedman (monetarismo)',s:null},
+      {id:'q5e4',cl:'',t:'Domanda aperta',d:'Una per materia.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ora passa a Economia.',
+    motiv_eco:'Quinta pagina completata! Il caso trentino è nel tuo quaderno. 🇮🇹',
+  },
+  g6:{
+    intro:'Sesta pagina — sintesi.',
+    dir:[
+      {id:'q6d1',cl:'dir-s',t:'[DIR] Titolo: DIRITTO — Sintesi',d:'Intestazione.',s:null},
+      {id:'q6d2',cl:'dir-s',t:'[DIR] Mappa completa enti locali',d:'Copia:',s:`STATO
+├─ REGIONE (legislazione, sanità)
+│   ├─ ordinaria (15)
+│   └─ speciale (5)
+├─ PROVINCIA/CITTÀ MET. (II livello)
+└─ COMUNE (anagrafe, servizi)`},
+      {id:'q6d3',cl:'dir-s',t:'[DIR] 2 frasi di sintesi sul diritto',d:'Riassumi il modulo dal punto di vista giuridico.',s:null},
+    ],
+    eco:[
+      {id:'q6e1',cl:'eco-s',t:'[ECO] Titolo: ECONOMIA — Sintesi',d:'Intestazione.',s:null},
+      {id:'q6e2',cl:'eco-s',t:'[ECO] Linea del tempo completa + futuro',d:'1500 → Mercantilismo\\n1776 → Smith\\n1817 → Ricardo + Malthus (limiti naturali)\\n1936 → Keynes\\n1976 → Friedman\\n1987 → Brundtland (sviluppo sostenibile)\\n2008 → Crisi → risposta keynesiana\\nOggi → Economia circolare',s:null},
+      {id:'q6e3',cl:'eco-s',t:'[ECO] 2 frasi di sintesi sull\'economia',d:'Riassumi il modulo dal punto di vista economico.',s:null},
+      {id:'q6e4',cl:'',t:'Autovalutazione',d:'Quale argomento ti è rimasto meno chiaro? Quale ti ha interessato di più? Una frase per ciascuno.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ora passa a Economia.',
+    motiv_eco:'Sesta pagina completata! Domani è l\'ultimo giorno. 🌟',
+  },
+  g7:{
+    intro:'Ultima pagina del modulo.',
+    dir:[
+      {id:'q7d1',cl:'dir-s',t:'[DIR] Titolo: Riepilogo Finale — Diritto',d:'Intestazione.',s:null},
+      {id:'q7d2',cl:'dir-s',t:'[DIR] 3 cose più importanti del diritto',d:'Senza guardare le pagine precedenti.',s:null},
+      {id:'q7d3',cl:'dir-s',t:'[DIR] Glossario — 4 termini giuridici',d:'• Sussidiarietà\n• Ente locale\n• Autonomia speciale\n• Federalismo fiscale',s:null},
+    ],
+    eco:[
+      {id:'q7e1',cl:'eco-s',t:'[ECO] Titolo: Riepilogo Finale — Economia',d:'Intestazione.',s:null},
+      {id:'q7e2',cl:'eco-s',t:'[ECO] 3 cose più importanti dell\'economia',d:'Senza guardare le pagine precedenti.',s:null},
+      {id:'q7e3',cl:'eco-s',t:'[ECO] Glossario — 4 termini economici',d:'• Mano invisibile\n• Vantaggio comparato\n• Moltiplicatore keynesiano\n• Monetarismo',s:null},
+      {id:'q7e4',cl:'',t:'Firma del modulo',d:'Scrivi: <strong>"Modulo 2 completato il [data]"</strong> e firma.',s:null},
+    ],
+    motiv_dir:'Sezione Diritto completata! Ultima sezione — passa a Economia.',
+    motiv_eco:'Modulo 2 completato! Sette pagine, due materie, un quaderno vero. 🏆',
+  },
+};
+
+// ═══════════════════════════
+// MAPPE SVG (semplice intro + riepilogativa dettagliata)
+// ═══════════════════════════
+function svgMappaDir(gi,tipo){
+  // tipo: 'intro' o 'riepilogo'
+  const maps={
+    g1:{
+      intro:`<svg viewBox="0 0 420 160" width="100%" font-family="Segoe UI,Arial" font-size="13">
+        <rect x="160" y="10" width="100" height="36" rx="8" fill="#1565C0" /><text x="210" y="33" fill="white" text-anchor="middle" font-weight="bold">STATO</text>
+        <line x1="210" y1="46" x2="70" y2="90" stroke="#8A96A3" stroke-width="1.5"/>
+        <line x1="210" y1="46" x2="210" y2="90" stroke="#8A96A3" stroke-width="1.5"/>
+        <line x1="210" y1="46" x2="350" y2="90" stroke="#8A96A3" stroke-width="1.5"/>
+        <rect x="20" y="90" width="100" height="34" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="70" y="112" fill="#1565C0" text-anchor="middle" font-weight="bold">Regione</text>
+        <rect x="160" y="90" width="100" height="34" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="210" y="112" fill="#1565C0" text-anchor="middle" font-weight="bold">Provincia</text>
+        <rect x="300" y="90" width="100" height="34" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="350" y="112" fill="#1565C0" text-anchor="middle" font-weight="bold">Comune</text>
+        <text x="210" y="155" fill="#8A96A3" text-anchor="middle" font-size="11">↑ principio di sussidiarietà ↑</text>
+      </svg>`,
+      riepilogo:`<svg viewBox="0 0 520 220" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="185" y="5" width="150" height="36" rx="8" fill="#1565C0"/><text x="260" y="28" fill="white" text-anchor="middle" font-weight="bold" font-size="13">STATO</text>
+        <line x1="260" y1="41" x2="80" y2="80" stroke="#8A96A3" stroke-width="1.5"/>
+        <line x1="260" y1="41" x2="260" y2="80" stroke="#8A96A3" stroke-width="1.5"/>
+        <line x1="260" y1="41" x2="440" y2="80" stroke="#8A96A3" stroke-width="1.5"/>
+        <rect x="20" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="80" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Regione</text>
+        <rect x="200" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="260" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Provincia / CM</text>
+        <rect x="380" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="440" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Comune</text>
+        <line x1="80" y1="112" x2="80" y2="145"/><rect x="20" y="145" width="120" height="28" rx="6" fill="#FFF8E1" stroke="#C9A84C" stroke-width="1.5"/><text x="80" y="164" fill="#7A5C00" text-anchor="middle" font-size="11">15 ord. + 5 speciali</text>
+        <line x1="260" y1="112" x2="260" y2="145"/><rect x="200" y="145" width="120" height="28" rx="6" fill="#FFF8E1" stroke="#C9A84C" stroke-width="1.5"/><text x="260" y="164" fill="#7A5C00" text-anchor="middle" font-size="11">II livello dal 2014</text>
+        <line x1="440" y1="112" x2="440" y2="145"/><rect x="380" y="145" width="120" height="28" rx="6" fill="#FFF8E1" stroke="#C9A84C" stroke-width="1.5"/><text x="440" y="164" fill="#7A5C00" text-anchor="middle" font-size="11">Sindaco diretto</text>
+        <text x="260" y="210" fill="#8A96A3" text-anchor="middle" font-size="11">↑ principio di sussidiarietà: funzioni all'ente più vicino al cittadino ↑</text>
+      </svg>`,
+    },
+    g2:{
+      intro:`<svg viewBox="0 0 400 160" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="150" y="10" width="100" height="34" rx="8" fill="#1565C0"/><text x="200" y="32" fill="white" text-anchor="middle" font-weight="bold">COMUNE</text>
+        <line x1="200" y1="44" x2="70" y2="88"/><line x1="200" y1="44" x2="200" y2="88"/><line x1="200" y1="44" x2="330" y2="88"/>
+        <rect x="15" y="88" width="110" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="70" y="109" fill="#1565C0" text-anchor="middle" font-weight="bold">Sindaco</text>
+        <rect x="145" y="88" width="110" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="200" y="109" fill="#1565C0" text-anchor="middle" font-weight="bold">Giunta Com.</text>
+        <rect x="275" y="88" width="110" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="330" y="109" fill="#1565C0" text-anchor="middle" font-weight="bold">Consiglio C.</text>
+        <text x="70" y="148" fill="#8A96A3" text-anchor="middle" font-size="10">eletto dai cittadini</text>
+        <text x="200" y="148" fill="#8A96A3" text-anchor="middle" font-size="10">esecutivo</text>
+        <text x="330" y="148" fill="#8A96A3" text-anchor="middle" font-size="10">legislativo</text>
+      </svg>`,
+      riepilogo:`<svg viewBox="0 0 480 200" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="165" y="5" width="150" height="34" rx="8" fill="#1565C0"/><text x="240" y="27" fill="white" text-anchor="middle" font-weight="bold" font-size="13">COMUNE</text>
+        <line x1="240" y1="39" x2="80" y2="80"/><line x1="240" y1="39" x2="240" y2="80"/><line x1="240" y1="39" x2="400" y2="80"/>
+        <rect x="20" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="80" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Sindaco</text>
+        <rect x="180" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="240" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Giunta Comunale</text>
+        <rect x="340" y="80" width="120" height="32" rx="7" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/><text x="400" y="101" fill="#1565C0" text-anchor="middle" font-weight="bold">Consiglio Com.</text>
+        <line x1="80" y1="112" x2="80" y2="140"/><rect x="20" y="140" width="120" height="26" rx="5" fill="#FFF8E1" stroke="#C9A84C"/><text x="80" y="158" fill="#7A5C00" text-anchor="middle" font-size="10">eletto direttamente</text>
+        <line x1="240" y1="112" x2="240" y2="140"/><rect x="180" y="140" width="120" height="26" rx="5" fill="#FFF8E1" stroke="#C9A84C"/><text x="240" y="158" fill="#7A5C00" text-anchor="middle" font-size="10">nomina Sindaco</text>
+        <line x1="400" y1="112" x2="400" y2="140"/><rect x="340" y="140" width="120" height="26" rx="5" fill="#FFF8E1" stroke="#C9A84C"/><text x="400" y="158" fill="#7A5C00" text-anchor="middle" font-size="10">approva bilancio</text>
+        <text x="240" y="190" fill="#8A96A3" text-anchor="middle" font-size="11">Funzioni: anagrafe · urbanistica · servizi sociali · scuole · rifiuti</text>
+      </svg>`,
+    },
+  };
+  const g='g'+gi;
+  if(maps[g]&&maps[g][tipo])return maps[g][tipo];
+  // Default generico per giorni senza SVG specifico
+  return tipo==='intro'
+    ?`<svg viewBox="0 0 300 80" width="100%" font-family="Segoe UI,Arial" font-size="12"><rect x="100" y="20" width="100" height="32" rx="8" fill="#1565C0"/><text x="150" y="41" fill="white" text-anchor="middle" font-weight="bold">Diritto — G${gi}</text></svg>`
+    :`<svg viewBox="0 0 300 80" width="100%" font-family="Segoe UI,Arial" font-size="12"><rect x="100" y="20" width="100" height="32" rx="8" fill="#1565C0"/><text x="150" y="41" fill="white" text-anchor="middle" font-weight="bold">Riepilogo Dir. G${gi}</text></svg>`;
+}
+
+function svgMappaEco(gi,tipo){
+  const maps={
+    g1:{
+      intro:`<svg viewBox="0 0 420 150" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="135" y="8" width="150" height="34" rx="8" fill="#6A1B9A"/><text x="210" y="30" fill="white" text-anchor="middle" font-weight="bold">MERCANTILISMO</text>
+        <line x1="210" y1="42" x2="100" y2="85"/><line x1="210" y1="42" x2="320" y2="85"/>
+        <rect x="30" y="85" width="140" height="30" rx="7" fill="#F3E5F5" stroke="#8E24AA" stroke-width="1.5"/><text x="100" y="105" fill="#6A1B9A" text-anchor="middle">Accumulo oro/argento</text>
+        <rect x="250" y="85" width="140" height="30" rx="7" fill="#F3E5F5" stroke="#8E24AA" stroke-width="1.5"/><text x="320" y="105" fill="#6A1B9A" text-anchor="middle">Dazi + monopoli</text>
+        <text x="210" y="140" fill="#8A96A3" text-anchor="middle" font-size="11">Visione a somma zero: se uno guadagna, l'altro perde</text>
+      </svg>`,
+      riepilogo:`<svg viewBox="0 0 480 180" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="165" y="5" width="150" height="34" rx="8" fill="#6A1B9A"/><text x="240" y="27" fill="white" text-anchor="middle" font-weight="bold" font-size="13">MERCANTILISMO</text>
+        <line x1="240" y1="39" x2="80" y2="80"/><line x1="240" y1="39" x2="240" y2="80"/><line x1="240" y1="39" x2="400" y2="80"/>
+        <rect x="15" y="80" width="130" height="30" rx="6" fill="#F3E5F5" stroke="#8E24AA"/><text x="80" y="100" fill="#6A1B9A" text-anchor="middle">Accumulo metalli</text>
+        <rect x="175" y="80" width="130" height="30" rx="6" fill="#F3E5F5" stroke="#8E24AA"/><text x="240" y="100" fill="#6A1B9A" text-anchor="middle">Dazi protettivi</text>
+        <rect x="335" y="80" width="130" height="30" rx="6" fill="#F3E5F5" stroke="#8E24AA"/><text x="400" y="100" fill="#6A1B9A" text-anchor="middle">Colonie + monopoli</text>
+        <line x1="240" y1="110" x2="240" y2="140"/>
+        <rect x="140" y="140" width="200" height="30" rx="7" fill="#FFF8E1" stroke="#C9A84C"/><text x="240" y="160" fill="#7A5C00" text-anchor="middle" font-weight="bold">Superato da Adam Smith (1776)</text>
+      </svg>`,
+    },
+    g2:{
+      intro:`<svg viewBox="0 0 400 150" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="130" y="8" width="140" height="34" rx="8" fill="#6A1B9A"/><text x="200" y="30" fill="white" text-anchor="middle" font-weight="bold">ADAM SMITH</text>
+        <line x1="200" y1="42" x2="100" y2="85"/><line x1="200" y1="42" x2="300" y2="85"/>
+        <rect x="25" y="85" width="150" height="30" rx="7" fill="#F3E5F5" stroke="#8E24AA" stroke-width="1.5"/><text x="100" y="105" fill="#6A1B9A" text-anchor="middle">Mano invisibile</text>
+        <rect x="225" y="85" width="150" height="30" rx="7" fill="#F3E5F5" stroke="#8E24AA" stroke-width="1.5"/><text x="300" y="105" fill="#6A1B9A" text-anchor="middle">Divisione del lavoro</text>
+        <text x="200" y="140" fill="#8A96A3" text-anchor="middle" font-size="11">Mercato libero → benessere collettivo</text>
+      </svg>`,
+      riepilogo:`<svg viewBox="0 0 480 190" width="100%" font-family="Segoe UI,Arial" font-size="12">
+        <rect x="160" y="5" width="160" height="34" rx="8" fill="#6A1B9A"/><text x="240" y="27" fill="white" text-anchor="middle" font-weight="bold" font-size="13">ADAM SMITH (1776)</text>
+        <line x1="240" y1="39" x2="100" y2="80"/><line x1="240" y1="39" x2="380" y2="80"/>
+        <rect x="25" y="80" width="150" height="32" rx="7" fill="#F3E5F5" stroke="#8E24AA"/><text x="100" y="101" fill="#6A1B9A" text-anchor="middle" font-weight="bold">Mano invisibile</text>
+        <rect x="305" y="80" width="150" height="32" rx="7" fill="#F3E5F5" stroke="#8E24AA"/><text x="380" y="101" fill="#6A1B9A" text-anchor="middle" font-weight="bold">Divisione del lavoro</text>
+        <line x1="100" y1="112" x2="100" y2="145"/><rect x="25" y="145" width="150" height="28" rx="6" fill="#FFF8E1" stroke="#C9A84C"/><text x="100" y="164" fill="#7A5C00" text-anchor="middle" font-size="11">Interesse personale → bene comune</text>
+        <line x1="380" y1="112" x2="380" y2="145"/><rect x="305" y="145" width="150" height="28" rx="6" fill="#FFF8E1" stroke="#C9A84C"/><text x="380" y="164" fill="#7A5C00" text-anchor="middle" font-size="11">20 → 48.000 spilli/giorno</text>
+      </svg>`,
+    },
+  };
+  const g='g'+gi;
+  if(maps[g]&&maps[g][tipo])return maps[g][tipo];
+  return tipo==='intro'
+    ?`<svg viewBox="0 0 300 80" width="100%" font-family="Segoe UI,Arial" font-size="12"><rect x="100" y="20" width="100" height="32" rx="8" fill="#6A1B9A"/><text x="150" y="41" fill="white" text-anchor="middle" font-weight="bold">Economia — G${gi}</text></svg>`
+    :`<svg viewBox="0 0 300 80" width="100%" font-family="Segoe UI,Arial" font-size="12"><rect x="100" y="20" width="100" height="32" rx="8" fill="#6A1B9A"/><text x="150" y="41" fill="white" text-anchor="middle" font-weight="bold">Riepilogo Eco. G${gi}</text></svg>`;
+}
+
+// ═══════════════════════════
+// UTILITY
+// ═══════════════════════════
+const ipl=t=>t.replace(/\{nome\}/g,G.nome);
+const VOLG=['cazzo','merda','vaffanculo','stronzo','coglione','figa','porco','puttana','bastardo'];
+function contieneVolg(s){return VOLG.some(v=>s.toLowerCase().includes(v));}
+function nomeOk(n){
+  const s=n.trim();
+  if(s.length<2)return 'Il nome è troppo corto.';
+  if(/^(.)\1+$/.test(s))return 'Sembra una sequenza ripetuta.';
+  if(!/[aeiouàèéìòù]/i.test(s))return 'Il nome non contiene vocali.';
+  if(/^\d+$/.test(s))return 'Scrivi il tuo nome, non un numero.';
+  return '';
+}
+function errKey(){return `${G.nome.toLowerCase().replace(/\s/g,'_')}_${G.classe}_${G.mod}_errori`;}
+function loadErr(){try{G.errori=JSON.parse(localStorage.getItem(errKey())||'[]');}catch(e){G.errori=[];}}
+function regErr(faseId,domId){
+  loadErr();
+  const i=G.errori.findIndex(e=>e.faseId===faseId&&e.domandaId===domId);
+  if(i>=0)G.errori[i].tentativiErrati++;
+  else G.errori.push({faseId,domandaId:domId,tentativiErrati:1});
+  try{localStorage.setItem(errKey(),JSON.stringify(G.errori));}catch(e){}
+}
+function send(p){
+  if(!CFG.gasUrl)return;
+  try{
+    let iframe=document.getElementById('_gas_ifr');
+    if(!iframe){iframe=document.createElement('iframe');iframe.name='_gas_ifr';iframe.id='_gas_ifr';iframe.style.display='none';document.body.appendChild(iframe);}
+    const form=document.createElement('form');form.method='POST';form.action=CFG.gasUrl;form.target='_gas_ifr';form.style.display='none';
+    const inp=document.createElement('input');inp.type='hidden';inp.name='payload';inp.value=JSON.stringify(p);
+    form.appendChild(inp);document.body.appendChild(form);form.submit();
+    setTimeout(()=>{try{document.body.removeChild(form);}catch(e){}},4000);
+  }catch(e){}
+}
+function initSnap(i){
+  if(!G.stati[i])G.stati[i]={completata:false,bs_dir:{parole:[],wc:false},bs_eco:{parole:[],wc:false},mappa:{},cloze:{},fc_dir:{idx:0,stati:{}},fc_eco:{idx:0,stati:{}},quad_dir:{},quad_eco:{},casoTabDir:0,casoTabEco:0};
+}
+const sn=i=>G.stati[i];
+function sv(path,val){
+  initSnap(G.fase);
+  const p=path.split('.');let o=G.stati[G.fase];
+  for(let i=0;i<p.length-1;i++)o=o[p[i]];
+  o[p[p.length-1]]=val;
+}
+function mk(cls){const d=document.createElement('div');d.className=cls;return d;}
+
+// ═══════════════════════════
+// LOGIN
+// ═══════════════════════════
+function doLogin(){
+  const ne=document.getElementById('inp-nome');const ce=document.getElementById('inp-classe');
+  const en=document.getElementById('ferr-nome');const ec=document.getElementById('ferr-classe');
+  en.textContent='';ec.textContent='';
+  const err=nomeOk(ne.value);if(err){en.textContent=err;ne.focus();return;}
+  if(!ce.value){ec.textContent='Seleziona la tua classe.';ce.focus();return;}
+  G.nome=ne.value.trim();G.classe=ce.value;loadErr();
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-app').classList.remove('hidden');
+  document.getElementById('header-info').textContent=G.nome+' · '+G.classe;
+  renderStepper();goFase(0);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inp-nome').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+});
+
+// ═══════════════════════════
+// STEPPER
+// ═══════════════════════════
+function renderStepper(){
+  const el=document.getElementById('stepper');el.innerHTML='';
+  FL_LABEL.forEach((lbl,i)=>{
+    const s=G.stati[i];const done=s&&s.completata;const curr=i===G.fase;const lock=i>G.fase;
+    const wrap=mk('step-item');
+    const b=document.createElement('button');
+    b.className='step-btn'+(done?' ok':'')+(curr?' curr':'');b.disabled=lock;
+    b.innerHTML=`<div class="step-circle">${done?'✓':(i+1)}</div><div class="step-label">${lbl}</div>`;
+    if(!lock&&!curr)b.onclick=()=>goFase(i);
+    wrap.appendChild(b);
+    if(i<FL_LABEL.length-1){const c=mk('step-conn'+(done?' done':''));wrap.appendChild(c);}
+    el.appendChild(wrap);
+  });
+}
+
+function goFase(i){
+  G.fase=i;initSnap(i);
+  document.getElementById('pbar').style.width=((i+1)/7*100)+'%';
+  renderStepper();
+  const el=document.getElementById('contenuto');el.innerHTML='';
+  [bldG1,bldG2,bldG3,bldG4,bldG5,bldG6,bldG7][i](el);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════
+// COSTRUTTORI COMPONENTI
+// ═══════════════════════════
+
+// ── Apertura ──
+function bldApertura(gi){
+  const c=mk('card');
+  c.innerHTML=`<div class="motiv"><div class="em">🏛️</div><p>${ipl(MSG_AP[gi])}</p></div>
+  <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+    <div class="timer-pill dir">📋 Diritto — 15 minuti</div>
+    <div class="timer-pill eco">📊 Economia — 15 minuti</div>
+  </div>`;
+  return c;
+}
+
+// ── Brainstorming libero ──
+function bldBs(mat,gi){
+  const id=mat;// 'dir' o 'eco'
+  const c=mk('card');
+  const colore=mat==='dir'?'var(--dir)':'var(--eco)';
+  const label=mat==='dir'?'📋 Diritto':'📊 Economia';
+  c.innerHTML=`
+    <div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">🧠</div>
+      Brainstorming ${label}</div>
+    <p style="font-size:.88rem;line-height:1.6;color:#444;margin-bottom:10px;">
+      Scrivi almeno <strong>${BS_MIN} parole</strong> su tutto quello che sai o pensi riguardo al tema di ${mat==='dir'?'<strong>Diritto</strong> (enti, istituzioni, leggi, autonomia...)':'<strong>Economia</strong> (mercato, denaro, produzione, commercio...)'}. Scrivi liberamente.
+    </p>
+    <div class="bs-row">
+      <input type="text" id="bs-inp-${id}" placeholder="Scrivi una parola..." maxlength="40" autocomplete="off">
+      <button class="btn ${mat==='dir'?'bdir':'beco'}" onclick="bsAdd('${id}')">Aggiungi</button>
+    </div>
+    <div id="bs-fb-${id}"></div>
+    <div class="sog-wrap"><div class="sog-bar" id="sog-${id}" style="width:0%"></div></div>
+    <div class="bs-cnt" id="cnt-${id}">0 / ${BS_MIN}</div>
+    <div class="bs-tags" id="tags-${id}"><span style="color:var(--gray);font-size:.79rem;font-style:italic">Le tue parole...</span></div>
+    <div class="tc mt8 hidden" id="btn-wc-${id}">
+      <button class="btn bg" onclick="mostraWC('${id}')">✓ Vedi il word cloud →</button>
+    </div>
+    <div class="wc-wrap" id="wc-${id}">
+      <p style="font-size:.87rem;margin-bottom:8px;color:#444;"><strong>Word cloud del docente</strong> — confronta con le tue parole:</p>
+      <div class="wc-canvas" id="wc-canvas-${id}"></div>
+      <div class="wc-legenda">🟡 Parole chiave &nbsp;|&nbsp; 🟢 Parole attese &nbsp;|&nbsp; ⚫ Parole bonus</div>
+      <div class="wc-confronto" id="wc-cf-${id}"></div>
+      <div class="tc mt10">
+        <button class="btn ${mat==='dir'?'bdir':'beco'}" onclick="wcContinua('${id}')">Continua con la lezione →</button>
+      </div>
+    </div>`;
+  setTimeout(()=>{
+    const inp=document.getElementById('bs-inp-'+id);
+    if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')bsAdd(id);});
+    const s=sn(G.fase);
+    aggiornaTagsBs(id,s['bs_'+id]||{parole:[]});
+    if((s['bs_'+id]||{}).wc)mostraWCDiretto(id);
+  },0);
+  return c;
+}
+
+function bsAdd(id){
+  const inp=document.getElementById('bs-inp-'+id);
+  const fb=document.getElementById('bs-fb-'+id);
+  if(!inp||!fb)return;
+  const raw=inp.value.trim();if(!raw)return;
+  if(contieneVolg(raw)){fb.style.color='var(--err)';fb.textContent='⚠ Parola non adatta.';inp.value='';inp.focus();return;}
+  const s=sn(G.fase);
+  const bsObj=s['bs_'+id]||{parole:[],wc:false};
+  if(bsObj.parole.some(p=>p.toLowerCase()===raw.toLowerCase())){
+    fb.style.color='var(--gold)';fb.textContent='⚠ Già inserita.';inp.value='';inp.focus();return;
+  }
+  bsObj.parole.push(raw);s['bs_'+id]=bsObj;sv('bs_'+id,bsObj);
+  fb.style.color='var(--ok)';fb.textContent='✓ "'+raw+'" aggiunta!';
+  inp.value='';inp.focus();
+  aggiornaTagsBs(id,bsObj);
+}
+
+function aggiornaTagsBs(id,bsObj){
+  const el=document.getElementById('tags-'+id);
+  const bar=document.getElementById('sog-'+id);
+  const cnt=document.getElementById('cnt-'+id);
+  const bw=document.getElementById('btn-wc-'+id);
+  if(el){
+    if(!bsObj.parole.length)el.innerHTML='<span style="color:var(--gray);font-size:.79rem;font-style:italic">Le tue parole...</span>';
+    else el.innerHTML=bsObj.parole.map(p=>`<span class="bs-tag">${p}</span>`).join('');
+  }
+  const p=Math.min(100,Math.round(bsObj.parole.length/BS_MIN*100));
+  if(bar)bar.style.width=p+'%';
+  if(cnt)cnt.textContent=bsObj.parole.length+' / '+BS_MIN;
+  if(bw&&!bsObj.wc){if(bsObj.parole.length>=BS_MIN)bw.classList.remove('hidden');else bw.classList.add('hidden');}
+}
+
+function mostraWC(id){
+  const s=sn(G.fase);const bsObj=s['bs_'+id]||{parole:[]};
+  bsObj.wc=true;s['bs_'+id]=bsObj;sv('bs_'+id,bsObj);
+  const bw=document.getElementById('btn-wc-'+id);if(bw)bw.classList.add('hidden');
+  mostraWCDiretto(id);
+}
+
+function mostraWCDiretto(id){
+  const wcWrap=document.getElementById('wc-'+id);if(wcWrap)wcWrap.style.display='block';
+  const canvas=document.getElementById('wc-canvas-'+id);if(!canvas)return;
+  const gi='g'+(G.fase+1);
+  const wc=id==='dir'?WC_DIR[gi]:WC_ECO[gi];
+  if(!wc){canvas.innerHTML='<span style="color:var(--gray)">Word cloud non disponibile.</span>';return;}
+  canvas.innerHTML='';
+  const tutte=[
+    ...wc.chiave.map(w=>({w,t:'chiave',sz:1.25})),
+    ...wc.comuni.map(w=>({w,t:'comune',sz:.95})),
+    ...wc.raro.map(w=>({w,t:'raro',sz:.76})),
+  ].sort(()=>Math.random()-.5);
+  tutte.forEach(item=>{
+    const span=document.createElement('span');
+    span.className='wc-word wc-'+item.t;
+    span.style.fontSize=item.sz+'rem';
+    span.textContent=item.w;
+    canvas.appendChild(span);
+  });
+  // Confronto
+  const s=sn(G.fase);const bsObj=s['bs_'+id]||{parole:[]};
+  const tutteParole=[...wc.chiave,...wc.comuni,...wc.raro].map(w=>w.toLowerCase());
+  const trovate=bsObj.parole.filter(p=>tutteParole.some(w=>w.includes(p.toLowerCase())||p.toLowerCase().includes(w.split(' ')[0])));
+  const cf=document.getElementById('wc-cf-'+id);
+  if(cf){
+    if(trovate.length===0)cf.innerHTML='Nessuna delle tue parole è nel word cloud — non è un problema. Significa che hai già idee tue sul tema. Studia la nuvola e capisci la logica.';
+    else cf.innerHTML='Bene! Le tue parole <strong>'+trovate.join(', ')+'</strong> sono presenti nel word cloud.';
+  }
+}
+
+function wcContinua(id){
+  const wcWrap=document.getElementById('wc-'+id);if(wcWrap)wcWrap.style.display='none';
+  // Rende visibile la sezione successiva
+  if(id==='dir'){
+    const el=document.getElementById('sezione-dir-content');
+    if(el){el.classList.remove('hidden');el.scrollIntoView({behavior:'smooth',block:'start'});}
+  } else {
+    const el=document.getElementById('sezione-eco-content');
+    if(el){el.classList.remove('hidden');el.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+
+// ── Mappa SVG ──
+function bldMappaSvg(mat,gi,tipo){
+  const c=mk('card');
+  const svg=mat==='dir'?svgMappaDir(gi,tipo):svgMappaEco(gi,tipo);
+  const titolo=tipo==='intro'?'Mappa introduttiva':'Mappa riepilogativa';
+  const desc=tipo==='intro'?'Guarda questa mappa prima di leggere la spiegazione. Ti aiuta a orientarti.':'Questa mappa riassume tutto quello che hai studiato in questa sezione.';
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">🗺️</div>${titolo}</div>
+    <p style="font-size:.85rem;color:var(--slate);margin-bottom:10px;">${desc}</p>
+    <div class="mappa-svg-wrap">${svg}</div>`;
+  return c;
+}
+
+// ── Spiegazione ──
+function bldSpieg(mat,html){
+  const c=mk('card');
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">📖</div>Spiegazione</div>${html}`;
+  return c;
+}
+
+// ── Mappa lacunosa + Cloze ──
+function bldEsercizi(mat,gi){
+  const c=mk('card');
+  const nodi=mat==='dir'?NODI_DIR['g'+gi]||[]:NODI_ECO['g'+gi]||[];
+  const cloze=mat==='dir'?CLOZE_DIR['g'+gi]||[]:CLOZE_ECO['g'+gi]||[];
+  const s=sn(G.fase);
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">✏️</div>Esercizi</div>
+    <p style="font-size:.85rem;color:var(--slate);margin-bottom:10px;">Completa la mappa lacunosa e il cloze test.</p>
+    <div id="nodi-${mat}"></div>
+    ${cloze.length?`<div class="sep"></div><div id="cloze-${mat}"></div>`:''}
+    <div class="tr mt12"><button class="btn ${mat==='dir'?'bdir':'beco'}" onclick="verificaEsercizi('${mat}','${gi}')">Verifica →</button></div>
+    <div id="fb-eserc-${mat}" class="mt8"></div>`;
+  setTimeout(()=>{
+    // nodi
+    const nodiEl=document.getElementById('nodi-'+mat);
+    if(nodiEl)nodi.forEach(n=>{
+      const r=s.mappa[n.id]||null;
+      const div=mk('nl');div.id='nl-'+n.id;
+      div.innerHTML=`<div class="fl">${n.pre}<span class="bw" id="bl-${n.id}">${r||'________'}</span>${n.post}</div>
+        <div class="opz">${n.opz.map(o=>`<button class="ob${r===o?' sel':''}" onclick="selOpz('${n.id}','${o.replace(/'/g,"\\'")}','${n.ok.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>
+        <div class="nfb" id="nfb-${n.id}"></div>`;
+      nodiEl.appendChild(div);
+    });
+    // cloze
+    const clozeEl=document.getElementById('cloze-'+mat);
+    if(clozeEl)cloze.forEach(d=>{
+      const r=s.cloze[d.id]||null;
+      const div=mk('cloze-q');div.id='cq-'+d.id;
+      div.innerHTML=`<div class="cloze-testo">${d.testo.replace('____','<span class="bw" id="cb-'+d.id+'">'+(r||'____')+'</span>')}</div>
+        <div class="opz">${d.scelte.map(sc=>`<button class="ob${r===sc?' sel':''}" onclick="selCloze('${d.id}','${sc}')">${sc}</button>`).join('')}</div>
+        <div class="nfb" id="cfb-${d.id}"></div>`;
+      clozeEl.appendChild(div);
+    });
+  },0);
+  return c;
+}
+
+function selOpz(nid,op,ok){
+  const s=sn(G.fase);s.mappa[nid]=op;sv('mappa',s.mappa);
+  const bl=document.getElementById('bl-'+nid);if(bl)bl.textContent=op;
+  const nEl=document.getElementById('nl-'+nid);
+  if(nEl)nEl.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===op?' sel':''));
+}
+
+function selCloze(did,sc){
+  const s=sn(G.fase);s.cloze[did]=sc;sv('cloze',s.cloze);
+  const cb=document.getElementById('cb-'+did);if(cb)cb.textContent=sc;
+  const cq=document.getElementById('cq-'+did);
+  if(cq)cq.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===sc?' sel':''));
+}
+
+function verificaEsercizi(mat,gi){
+  const s=sn(G.fase);
+  const nodi=mat==='dir'?NODI_DIR['g'+gi]||[]:NODI_ECO['g'+gi]||[];
+  const cloze=mat==='dir'?CLOZE_DIR['g'+gi]||[]:CLOZE_ECO['g'+gi]||[];
+  let ok=0,tot=nodi.length+cloze.length;
+  nodi.forEach(n=>{
+    const r=s.mappa[n.id];const nEl=document.getElementById('nl-'+n.id);const fEl=document.getElementById('nfb-'+n.id);
+    if(!r){if(nEl)nEl.className='nl nko';if(fEl){fEl.style.color='var(--err)';fEl.textContent='⚠ Scegli.';}regErr('g'+G.fase+'_'+mat,n.id);return;}
+    const corr=r===n.ok;if(nEl)nEl.className='nl '+(corr?'nok':'nko');
+    if(nEl)nEl.querySelectorAll('.ob').forEach(b=>{if(b.textContent===n.ok)b.className='ob corr';else if(b.textContent===r&&!corr)b.className='ob sba';});
+    if(fEl){fEl.style.color=corr?'var(--ok)':'var(--err)';fEl.textContent=corr?'✓':'✗ "'+n.ok+'".';}
+    if(corr)ok++;else regErr('g'+(G.fase+1)+'_'+mat,n.id);
+  });
+  cloze.forEach(d=>{
+    const r=s.cloze[d.id];const cq=document.getElementById('cq-'+d.id);const cf=document.getElementById('cfb-'+d.id);
+    if(!r){if(cq)cq.className='cloze-q nko';if(cf){cf.style.color='var(--err)';cf.textContent='⚠ Scegli.';}regErr('g'+(G.fase+1)+'_'+mat,d.id);return;}
+    const corr=r===d.ok;if(cq)cq.className='cloze-q '+(corr?'nok':'nko');
+    if(cq)cq.querySelectorAll('.ob').forEach(b=>{if(b.textContent===d.ok)b.className='ob corr';else if(b.textContent===r&&!corr)b.className='ob sba';});
+    if(cf){cf.style.color=corr?'var(--ok)':'var(--err)';cf.textContent=corr?'✓':'✗ "'+d.ok+'".';}
+    if(corr)ok++;else regErr('g'+(G.fase+1)+'_'+mat,d.id);
+  });
+  const fb=document.getElementById('fb-eserc-'+mat);
+  if(fb)fb.innerHTML=ok===tot?`<div class="callout co">✓ Tutto corretto! Ottimo.</div>`:`<div class="callout cw">${ok}/${tot} corretti. Rivedi le risposte in rosso.</div>`;
+}
+
+// ── Flashcard ──
+function bldFlashcard(mat,gi){
+  const fcAll=mat==='dir'?FC_DIR:FC_ECO;
+  const fcDel=fcAll.filter(f=>f.g<=gi+1);
+  const nuove=fcAll.filter(f=>f.g===gi+1).length;
+  const s=sn(G.fase);
+  const c=mk('card');
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">🃏</div>
+    Flashcard <span class="badge bdg-new">${nuove} nuove</span></div>
+    <p style="font-size:.85rem;color:var(--slate);margin-bottom:9px;">Clicca per girare. Valuta onestamente.</p>
+    <div class="fc-nav">
+      <button class="btn bo" id="fc-prv-${mat}" onclick="fcNav(-1,'${mat}',${gi})">← Prec.</button>
+      <span id="fc-cnt-${mat}" style="font-size:.81rem;color:var(--gray);">1 / ${fcDel.length}</span>
+      <button class="btn bo" id="fc-nxt-${mat}" onclick="fcNav(1,'${mat}',${gi})">Succ. →</button>
+    </div>
+    <div class="fc-wrap"><div class="fc" id="fc-card-${mat}" onclick="fcFlip('${mat}',${gi})">
+      <div class="fcf ${mat}" id="fc-f-${mat}"><div></div></div>
+      <div class="fcb ${mat}" id="fc-b-${mat}"></div>
+    </div></div>
+    <div class="fc-stato hidden" id="fc-st-${mat}">
+      <button class="fsok" onclick="fcVal('ok','${mat}',${gi})">✓ Lo sapevo</button>
+      <button class="fsrip" onclick="fcVal('rip','${mat}',${gi})">↩ Da ripassare</button>
+    </div>
+    <div id="fc-prog-${mat}" style="margin-top:7px;font-size:.78rem;color:var(--gray);text-align:right;"></div>`;
+  setTimeout(()=>renderFcMat(mat,gi),0);
+  return c;
+}
+
+function fcDel(mat,gi){return (mat==='dir'?FC_DIR:FC_ECO).filter(f=>f.g<=gi+1);}
+
+function renderFcMat(mat,gi){
+  const s=sn(G.fase);const fcObj=s['fc_'+mat]||{idx:0,stati:{}};
+  const cards=fcDel(mat,gi);const idx=fcObj.idx||0;const fc=cards[idx];if(!fc)return;
+  const nuova=fc.g===gi+1;
+  const fEl=document.getElementById('fc-f-'+mat);
+  const bEl=document.getElementById('fc-b-'+mat);
+  const card=document.getElementById('fc-card-'+mat);
+  if(fEl){fEl.className='fcf'+(nuova?' '+mat:'');fEl.innerHTML=`<div><div class="fc-mat fc-mat-${mat}">${mat==='dir'?'📋 Diritto':'📊 Economia'}</div>${fc.d}<div class="fc-hint">clicca per girare</div></div>`;}
+  if(bEl){bEl.className='fcb'+(nuova?' '+mat:'');bEl.innerHTML=`<div class="fcb-inner">${fc.r}</div>`;}
+  if(card)card.classList.remove('flip');
+  const st=document.getElementById('fc-st-'+mat);if(st)st.classList.add('hidden');
+  const cnt=document.getElementById('fc-cnt-'+mat);if(cnt)cnt.textContent=(idx+1)+' / '+cards.length;
+  const prv=document.getElementById('fc-prv-'+mat);if(prv)prv.disabled=idx===0;
+  const nxt=document.getElementById('fc-nxt-'+mat);if(nxt)nxt.disabled=idx===cards.length-1;
+  const prog=document.getElementById('fc-prog-'+mat);
+  if(prog)prog.textContent=Object.keys(fcObj.stati||{}).length+' su '+cards.length+' valutate';
+}
+
+function fcFlip(mat,gi){
+  const card=document.getElementById('fc-card-'+mat);if(!card)return;
+  card.classList.toggle('flip');
+  const st=document.getElementById('fc-st-'+mat);
+  if(st){if(card.classList.contains('flip'))st.classList.remove('hidden');else st.classList.add('hidden');}
+}
+
+function fcVal(esito,mat,gi){
+  const s=sn(G.fase);const fcObj=s['fc_'+mat]||{idx:0,stati:{}};
+  const cards=fcDel(mat,gi);const idx=fcObj.idx||0;const fc=cards[idx];if(!fc)return;
+  if(!fcObj.stati)fcObj.stati={};fcObj.stati[fc.id]=esito;
+  if(esito==='rip')regErr('g'+(G.fase+1)+'_fc_'+mat,fc.id);
+  s['fc_'+mat]=fcObj;sv('fc_'+mat,fcObj);
+  if(idx<cards.length-1){fcObj.idx=idx+1;renderFcMat(mat,gi);}
+  else{
+    const st=document.getElementById('fc-st-'+mat);if(st)st.classList.add('hidden');
+    const prog=document.getElementById('fc-prog-'+mat);
+    if(prog)prog.innerHTML='<span style="color:var(--ok);font-weight:700;">✓ Flashcard completate!</span>';
+  }
+}
+
+function fcNav(d,mat,gi){
+  const s=sn(G.fase);const fcObj=s['fc_'+mat]||{idx:0};
+  const cards=fcDel(mat,gi);const i=(fcObj.idx||0)+d;
+  if(i<0||i>=cards.length)return;
+  fcObj.idx=i;s['fc_'+mat]=fcObj;sv('fc_'+mat,fcObj);renderFcMat(mat,gi);
+}
+
+// ── Caso della settimana ──
+function bldCaso(mat,gi){
+  const c=mk('card');
+  const tabs=mat==='dir'?casoTabsDir(gi):casoTabsEco(gi);
+  const initTab=mat==='dir'?sn(G.fase).casoTabDir||0:sn(G.fase).casoTabEco||0;
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">🏔️</div>
+    Caso della settimana — ${mat==='dir'?'PA di Trento (Diritto)':'PA di Trento (Economia)'}</div>
+    <div class="caso-hdr">
+      <p style="font-size:.88rem;opacity:.9;">${mat==='dir'?'Come il territorio che abiti è un caso unico di autonomia locale.':'Come il Trentino si relaziona alle teorie economiche che hai studiato.'}</p>
+    </div>
+    <div class="caso-tabs" id="caso-tabs-${mat}">${tabs.map((t,i)=>`<button class="ctb${i===0?' on':''}" onclick="casoTab('${mat}',${i},this)">${t.lbl}</button>`).join('')}</div>
+    <div id="caso-content-${mat}">${tabs[0].html}</div>`;
+  return c;
+}
+
+function casoTab(mat,i,btn){
+  const tabs=mat==='dir'?casoTabsDir(G.fase+1):casoTabsEco(G.fase+1);
+  const s=sn(G.fase);
+  if(mat==='dir')s.casoTabDir=i;else s.casoTabEco=i;
+  document.querySelectorAll(`#caso-tabs-${mat} .ctb`).forEach((b,j)=>b.className='ctb'+(j===i?' on':''));
+  const cc=document.getElementById('caso-content-'+mat);
+  if(cc&&tabs[i])cc.innerHTML=tabs[i].html;
+}
+
+function casoTabsDir(gi){
+  return[
+    {lbl:'📋 Autonomia',html:`<p class="tp">La PA di Trento ha <span class="ev dir">autonomia speciale</span> garantita dalla Costituzione (Statuto 1972). Può legiferare su sanità, istruzione, strade, università — materie che altrove spettano alla Regione o allo Stato. Il motivo: storia austriaca fino al 1918 e tutela della minoranza linguistica tedesca.</p><div class="callout cdir">UniTrento è l'unica università pubblica italiana gestita direttamente da un ente locale autonomo, senza dipendere dal Ministero.</div>`},
+    {lbl:'💶 Fiscalità',html:`<p class="tp">La PA trattiene circa il <span class="ev dir">90% delle tasse</span> raccolte sul territorio — circa 6 miliardi di euro per 540.000 abitanti. Una spesa pro-capite tra le più alte d'Italia.</p>
+    <table class="tab-cf"><tr><th></th><th>PA Trento</th><th>Regione ordinaria</th></tr><tr><td>Tasse trattenute</td><td>~90%</td><td>~25%</td></tr><tr><td>Dipendenza Roma</td><td>Minima</td><td>Alta</td></tr><tr><td>Spesa pro-capite</td><td>Molto alta</td><td>Media</td></tr></table>`},
+    {lbl:'🔎 Confronto Italia',html:`<p class="tp">Il modello trentino è spesso citato nel dibattito sul <span class="ev dir">federalismo fiscale</span>: chi gestisce i soldi vicino al territorio li usa meglio. Le Regioni del Sud chiedono più autonomia, ma il sistema nazionale fatica a cambiare.</p><div class="callout cw"><strong>Punto aperto:</strong> L'autonomia speciale è un privilegio o un modello da estendere? Il dibattito politico in Italia è ancora acceso.</div>`},
+  ];
+}
+
+function casoTabsEco(gi){
+  const tabs={
+    1:[
+      {lbl:'📊 PIL e PA Trento',html:`<p class="tp">La PA di Trento ha un PIL pro capite tra i più alti d'Italia. Questo è possibile grazie all'autonomia speciale che le consente di trattenere il 90% delle tasse raccolte sul territorio e investirle localmente. Smith approverebbe: risorse vicino a chi le raccoglie, meno sprechi, più efficienza. Ma il PIL da solo basta a misurare il benessere?</p><div class="callout ceco">Il PIL misura la produzione ma non la felicità, non la distribuzione, non l'impatto ambientale. Un Paese può avere un PIL alto e grandi disuguaglianze.</div>`},
+      {lbl:'📈 Crescita e storia',html:`<p class="tp">Per secoli il PIL mondiale è rimasto quasi piatto. La <span class="ev eco">Rivoluzione industriale</span> ha cambiato tutto: dal 1800 in poi la crescita è diventata esponenziale. Il Trentino ha beneficiato di questa crescita — ma in modo diverso da altre regioni italiane, grazie all'autonomia e al turismo montano.</p>`},
+    ],
+    2:[
+      {lbl:'📊 Smith e il Comune',html:`<p class="tp"><strong>Adam Smith</strong> approverebbe il Comune come ente locale: le decisioni prese vicino ai cittadini sono più efficienti perché chi decide conosce meglio i bisogni locali. La <span class="ev eco">mano invisibile</span> funziona meglio quando le istituzioni sono vicine alle persone.</p><div class="callout ceco">Il mercato del turismo in Val di Fiemme è un esempio di mano invisibile: imprese locali che competono, innovano e creano benessere collettivo senza pianificazione centrale.</div>`},
+    ],
+    3:[
+      {lbl:'🌍 Ricardo e Malthus oggi',html:`<p class="tp">Il <span class="ev eco">vantaggio comparato</span> di Ricardo si vede nel Trentino: la specializzazione in turismo, mele, vino e legname permette di scambiare con successo con altri territori. Ma <span class="ev eco">Malthus</span> ci ricorderebbe: le risorse naturali (neve, foreste, acqua) sono limitate. La crescita del turismo ha un limite naturale.</p><div class="callout ceco">La siccità e il caldo degli ultimi anni stanno già mettendo sotto pressione il turismo invernale in Val di Fiemme. Malthus aveva ragione: i limiti naturali esistono.</div>`},
+    ],
+    4:[
+      {lbl:'🏛️ Keynes e la PA Trento',html:`<p class="tp">La PA di Trento ha applicato la lezione di <span class="ev eco">Keynes</span> in modo autonomo: grazie ai propri fondi può fare investimenti pubblici (strade, scuole, ospedali, banda larga) senza aspettare Roma. Quando c'è una crisi locale, può intervenire rapidamente con spesa pubblica. Questo è il <span class="ev eco">moltiplicatore</span> keynesiano in azione.</p>`},
+    ],
+    5:[
+      {lbl:'⚖️ Friedman e lo sviluppo sostenibile',html:`<p class="tp"><strong>Friedman</strong> approverebbe l'autonomia fiscale trentina: meno intermediazione statale centrale, più libertà locale. Ma il <span class="ev eco">sviluppo sostenibile</span> del Rapporto Brundtland gli pone una domanda difficile: il mercato libero può da solo proteggere l'ambiente? La risposta del Trentino: no — serve regolazione pubblica per preservare le risorse naturali che sono alla base dell'economia locale.</p>`},
+    ],
+    6:[
+      {lbl:'♻️ Economia circolare in Trentino',html:`<p class="tp">Il Trentino è un esempio concreto di transizione verso l'<span class="ev eco">economia circolare</span>: raccolta differenziata tra le più alte d'Italia, filiere corte per i prodotti agricoli, turismo sostenibile, energie rinnovabili (idroelettrico). L'alternativa all'<span class="ev eco">economia lineare</span> non è un'utopia — è già in corso.</p><div class="callout ceco">La crisi del 2008 ha dimostrato che il modello basato sulla crescita infinita ha i suoi limiti. L'economia circolare è il tentativo più concreto di conciliare crescita e sostenibilità.</div>`},
+    ],
+  };
+  const t=tabs[gi]||tabs[1];
+  return t;
+}
+
+function bldQuaderno(mat,gi){
+  const data=QUAD['g'+(gi+1)];
+  const steps=mat==='dir'?data.dir:data.eco;
+  const motivKey='motiv_'+mat;
+  const quadKey='quad_'+mat;
+  const s=sn(G.fase);
+  const c=mk('card');
+  c.innerHTML=`<div class="card-title"><div class="c-icon" style="background:${mat==='dir'?'var(--dirL)':'var(--ecoL)'}">📓</div>
+    Quaderno fisico — ${mat==='dir'?'Sezione Diritto':'Sezione Economia'}</div>
+    <div class="callout cn mb8">✏️ Prendi carta e penna. ${data.intro}</div>
+    <div id="quad-steps-${mat}"></div>
+    <div id="quad-unlock-${mat}" class="quad-unlock hidden">
+      <div style="font-size:1.4rem">🎉</div>
+      <div style="font-weight:700;color:var(--navy);margin-top:4px;">${data[motivKey]}</div>
+    </div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('quad-steps-'+mat);if(!el)return;
+    steps.forEach((step,i)=>{
+      const done=!!(s[quadKey]&&s[quadKey][step.id]);
+      const div=document.createElement('div');
+      div.className='quad-step'+(done?' done':'')+(step.cl?' '+step.cl:'');div.id='qs-'+step.id;
+      div.innerHTML=`<div class="quad-step-hdr">
+        <div class="qchk${done?' on':''}" id="qchk-${step.id}" onclick="togQuad('${step.id}','${mat}')">
+          ${done?'✓':''}
+        </div>
+        <div class="quad-body">
+          <div class="quad-title">${i+1}. ${step.t}</div>
+          <div class="quad-desc">${step.d.replace(/\n/g,'<br>')}</div>
+          ${step.s?`<div class="quad-schema">${step.s}</div>`:''}
+        </div>
+      </div>`;
+      el.appendChild(div);
+    });
+    aggiornaQuadUnlock(mat,s,data,steps);
+  },0);
+  return c;
+}
+
+function togQuad(stepId,mat){
+  const s=sn(G.fase);const quadKey='quad_'+mat;
+  if(!s[quadKey])s[quadKey]={};
+  s[quadKey][stepId]=!s[quadKey][stepId];sv(quadKey,s[quadKey]);
+  const chk=document.getElementById('qchk-'+stepId);const qs=document.getElementById('qs-'+stepId);
+  if(chk){if(s[quadKey][stepId]){chk.classList.add('on');chk.textContent='✓';}else{chk.classList.remove('on');chk.textContent='';}}
+  if(qs){if(s[quadKey][stepId])qs.classList.add('done');else qs.classList.remove('done');}
+  const data=QUAD['g'+(G.fase+1)];const steps=mat==='dir'?data.dir:data.eco;
+  aggiornaQuadUnlock(mat,s,data,steps);
+}
+
+function aggiornaQuadUnlock(mat,s,data,steps){
+  const quadKey='quad_'+mat;
+  const tutte=steps.every(st=>s[quadKey]&&s[quadKey][st.id]);
+  const el=document.getElementById('quad-unlock-'+mat);if(el){if(tutte)el.classList.remove('hidden');else el.classList.add('hidden');}
+  // Se diritto completato, sblocca pulsante vai a eco
+  if(mat==='dir'){
+    const btn=document.getElementById('btn-vai-eco');if(btn)btn.disabled=!tutte;
+    const mn=document.getElementById('mancano-dir');if(mn){const m=steps.filter(st=>!(s[quadKey]&&s[quadKey][st.id])).length;mn.textContent=tutte?'':m+' sezioni del quaderno Diritto ancora da completare.';}
+  } else {
+    const btn=document.getElementById('btn-completa');if(btn)btn.disabled=!tutte;
+    const mn=document.getElementById('mancano-eco');if(mn){const m=steps.filter(st=>!(s[quadKey]&&s[quadKey][st.id])).length;mn.textContent=tutte?'':m+' sezioni del quaderno Economia ancora da completare.';}
+  }
+}
+
+// ── Pulsante transizione ──
+function bldTransizione(){
+  const c=mk('card');
+  c.style.background='linear-gradient(135deg,var(--dirL),var(--ecoL))';
+  c.style.border='2px solid var(--teal)';
+  c.innerHTML=`<div style="text-align:center;padding:8px 0;">
+    <div style="font-size:1.5rem;margin-bottom:8px;">🎉</div>
+    <p style="font-weight:700;color:var(--navy);margin-bottom:12px;">Sezione Diritto completata! Ora passa all'Economia.</p>
+    <div id="mancano-dir" class="quad-mancano mb8"></div>
+    <button class="btn beco" id="btn-vai-eco" onclick="mostraEco()" disabled>Vai alla sezione Economia →</button>
+  </div>`;
+  return c;
+}
+
+function mostraEco(){
+  const ecoEl=document.getElementById('sezione-eco');
+  if(ecoEl){ecoEl.classList.remove('hidden');ecoEl.scrollIntoView({behavior:'smooth',block:'start'});}
+  // Mostra anche chiusura
+  const ch=document.getElementById('card-chiusura');if(ch)ch.classList.remove('hidden');
+}
+
+// ── Chiusura ──
+function bldChiusura(gi){
+  const c=mk('card hidden');c.id='card-chiusura';
+  c.innerHTML=`<div style="text-align:center;padding:8px 0 12px;">
+    <div class="perc">${PERC[gi]}</div>
+    <div class="motiv" style="padding:0;"><div class="em">🎯</div><p>${ipl(MSG_CH[gi])}</p></div>
+    <div class="callout ci" style="margin-top:14px;text-align:left;">
+      <strong>📌 Prima di domani:</strong> rileggi entrambe le colonne del quaderno. Solo rileggere — non aggiungere nulla.
+    </div>
+    <div id="mancano-eco" class="quad-mancano mt8"></div>
+    <button class="btn bn" id="btn-completa" style="margin-top:14px;" onclick="completaFase()" disabled>
+      ✓ Ho finito il Giorno ${gi+1}
+    </button>
+  </div>`;
+  return c;
+}
+
+function completaFase(){
+  const s=sn(G.fase);s.completata=true;sv('completata',true);
+  send({nome:G.nome,classe:G.classe,mod:G.mod,giorno:G.fase+1,ts:new Date().toISOString(),
+    parole_dir:(s.bs_dir||{parole:[]}).parole,parole_eco:(s.bs_eco||{parole:[]}).parole,mappa:s.mappa,fc_dir:(s.fc_dir||{stati:{}}).stati,fc_eco:(s.fc_eco||{stati:{}}).stati});
+  renderStepper();
+  const msg=G.fase<6?`Giorno ${G.fase+1} completato! Giorno ${G.fase+2} sbloccato.`:`Modulo completato, ${G.nome}! 🏆`;
+  document.getElementById('contenuto').innerHTML=`<div class="card">
+    <div class="motiv"><div class="em">${G.fase<6?'🎉':'🏆'}</div><p>${msg}</p></div>
+    <div class="callout co mt12">${G.fase<6?`<button class="btn bp" onclick="goFase(${G.fase+1})">Vai al Giorno ${G.fase+2} →</button>`:'Tutti i giorni completati!'}</div>
+    <div class="tc mt12"><button class="btn bo" onclick="goFase(${G.fase})">← Rivedi il Giorno ${G.fase+1}</button></div>
+  </div>`;
+}
+
+// ═══════════════════════════
+// COSTRUTTORI GIORNI
+// ═══════════════════════════
+function costruisciGiorno(el,gi,spiegDirHtml,spiegEcoHtml){
+  const s=sn(gi);
+  // Apertura
+  el.appendChild(bldApertura(gi));
+
+  // ── SEZIONE DIRITTO ──
+  const blkDir=mk('sezione-blk dir');
+  const innerDir=mk('sezione-inner');
+  innerDir.innerHTML=`<div class="sezione-hdr dir"><h2>📋 DIRITTO</h2><span class="timer-pill dir">⏱ 15 minuti</span></div>`;
+  // BS dir
+  innerDir.appendChild(bldBs('dir',gi));
+  // Contenuto dir (nascosto finché WC non completato)
+  const dirContent=mk('hidden');dirContent.id='sezione-dir-content';
+  dirContent.appendChild(bldMappaSvg('dir',gi+1,'intro'));
+  dirContent.appendChild(bldSpieg('dir',spiegDirHtml));
+  dirContent.appendChild(bldEsercizi('dir',gi+1));
+  dirContent.appendChild(bldFlashcard('dir',gi));
+  dirContent.appendChild(bldMappaSvg('dir',gi+1,'riepilogo'));
+  dirContent.appendChild(bldCaso('dir',gi+1));
+  dirContent.appendChild(bldQuaderno('dir',gi));
+  dirContent.appendChild(bldTransizione());
+  innerDir.appendChild(dirContent);
+  blkDir.appendChild(innerDir);
+  el.appendChild(blkDir);
+
+  // ── SEZIONE ECONOMIA ──
+  const blkEco=mk('sezione-blk eco hidden');blkEco.id='sezione-eco';
+  const innerEco=mk('sezione-inner');
+  innerEco.innerHTML=`<div class="sezione-hdr eco"><h2>📊 ECONOMIA</h2><span class="timer-pill eco">⏱ 15 minuti</span></div>`;
+  innerEco.appendChild(bldBs('eco',gi));
+  const ecoContent=mk('hidden');ecoContent.id='sezione-eco-content';
+  ecoContent.appendChild(bldMappaSvg('eco',gi+1,'intro'));
+  ecoContent.appendChild(bldSpieg('eco',spiegEcoHtml));
+  ecoContent.appendChild(bldEsercizi('eco',gi+1));
+  ecoContent.appendChild(bldFlashcard('eco',gi));
+  ecoContent.appendChild(bldMappaSvg('eco',gi+1,'riepilogo'));
+  ecoContent.appendChild(bldCaso('eco',gi+1));
+  ecoContent.appendChild(bldQuaderno('eco',gi));
+  innerEco.appendChild(ecoContent);
+  blkEco.appendChild(innerEco);
+  el.appendChild(blkEco);
+
+  // Chiusura
+  el.appendChild(bldChiusura(gi));
+
+  // Ripristina stati
+  setTimeout(()=>{
+    if(s.bs_dir&&s.bs_dir.wc){const dc=document.getElementById('sezione-dir-content');if(dc)dc.classList.remove('hidden');mostraWCDiretto('dir');}
+    if(s.bs_eco&&s.bs_eco.wc){mostraWCDiretto('eco');}
+    aggiornaTagsBs('dir',s.bs_dir||{parole:[]});
+    aggiornaTagsBs('eco',s.bs_eco||{parole:[]});
+    if(s.bs_dir&&s.bs_dir.wc){renderFcMat('dir',gi);}
+    if(s.bs_eco&&s.bs_eco.wc){renderFcMat('eco',gi);}
+    const data=QUAD['g'+(gi+1)];
+    if(data){
+      aggiornaQuadUnlock('dir',s,data,data.dir);
+      aggiornaQuadUnlock('eco',s,data,data.eco);
+    }
+  },0);
+}
+
+// ── SPIEGAZIONI PER GIORNO ──
+const SPIEG={
+  g1:{
+    dir:`<div class="th dir">Gli enti locali</div>
+    <p class="tp">Gli <span class="ev dir">enti locali</span> sono enti pubblici che esercitano funzioni amministrative a livello territoriale. La Costituzione (art. 114) riconosce Comuni, Province, Città Metropolitane e Regioni come enti costitutivi della Repubblica.</p>
+    <div class="th dir">Il principio di sussidiarietà</div>
+    <p class="tp">Le funzioni pubbliche vanno svolte dall'ente <span class="ev dir">più vicino al cittadino</span> capace di svolgerle adeguatamente. Solo se quell'ente non è adeguato, interviene l'ente superiore. È il principio opposto alla centralizzazione.</p>
+    <div class="callout cdir mt8">La sussidiarietà è il principio che dà senso all'intera struttura degli enti locali: spiega perché esiste il Comune, la Provincia, la Regione — ognuno con il proprio livello.</div>`,
+    eco:`<div class="th eco">PIL e crescita economica</div>
+    <p class="tp">Il <span class="ev eco">PIL (Prodotto Interno Lordo)</span> è la somma del valore di tutti i beni e servizi prodotti in un Paese in un dato periodo (trimestre, semestre, anno). È la misura principale della ricchezza di un Paese. Quando il PIL aumenta da un periodo all'altro, si parla di <span class="ev eco">crescita economica</span>.</p>
+    <div class="th eco">La Rivoluzione industriale come svolta</div>
+    <p class="tp">La crescita economica è un fenomeno <strong>recente</strong> nella storia dell'umanità. Per secoli i livelli di produzione sono rimasti stabili. Solo dalla <span class="ev eco">Rivoluzione industriale</span> (fine \'700, Inghilterra) i livelli di produzione hanno iniziato a crescere in modo consistente e permanente — grazie alla macchina a vapore, al carbone, alle nuove tecniche agricole e all'affermazione della classe degli imprenditori.</p>
+    <div class="th eco">Il mercantilismo — il contesto prima di Smith</div>
+    <p class="tp">Prima della Rivoluzione industriale dominava il <span class="ev eco">mercantilismo</span>: la ricchezza di uno Stato dipende dall'oro e argento accumulati. Per aumentarla: esportare il più possibile, importare il meno possibile. Una visione a <strong>somma zero</strong> — se uno Stato guadagna, un altro perde. Adam Smith dimostrerà il contrario.</p>
+    <div class="callout ceco mt8">Il PIL non misura tutto: non misura la felicità, la distribuzione della ricchezza, l'impatto ambientale. Ma è il punto di partenza per capire la macroeconomia — e il dibattito sui suoi limiti è centrale nell'economia moderna.</div>`,
+  },
+  g2:{
+    dir:`<div class="th dir">Il Comune — l'ente più vicino al cittadino</div>
+    <p class="tp">Il Comune ha tre organi: <span class="ev dir">Consiglio Comunale</span> (legislativo, approva delibere e bilancio), <span class="ev dir">Giunta Comunale</span> (esecutivo, attua le decisioni), <span class="ev dir">Sindaco</span> (capo dell'amministrazione, eletto direttamente dai cittadini).</p>
+    <div class="th dir">Funzioni del Comune</div>
+    <p class="tp">Anagrafe, stato civile, edilizia e urbanistica, asili nido e scuole primarie, trasporto locale, servizi sociali, polizia municipale, rifiuti, acqua. In pratica: tutto ciò che riguarda la vita quotidiana locale.</p>`,
+    eco:`<div class="th eco">Adam Smith — La mano invisibile</div>
+    <p class="tp">Nel 1776 Smith pubblica <em>La ricchezza delle nazioni</em>. Tesi centrale: in un mercato libero, ogni individuo che persegue il proprio interesse contribuisce inconsapevolmente al benessere collettivo — guidato da una <span class="ev eco">mano invisibile</span>.</p>
+    <div class="th eco">La divisione del lavoro</div>
+    <p class="tp">Specializzare i lavoratori in un'unica operazione moltiplica la produttività. Esempio di Smith: fabbrica di spilli. Un operaio da solo: 20/giorno. Con 18 operazioni specializzate su 10 operai: 48.000/giorno.</p>
+    <div class="qt">«Non è dalla benevolenza del macellaio che ci aspettiamo il pranzo, ma dalla considerazione del suo interesse personale.» — Smith, 1776</div>`,
+  },
+  g3:{
+    dir:`<div class="th dir">La Provincia dopo la riforma 2014</div>
+    <p class="tp">Con la legge Delrio del 2014, le Province sono diventate <span class="ev dir">enti di secondo livello</span>: i presidenti non sono più eletti direttamente dai cittadini, ma dai sindaci e consiglieri del territorio. Competenze rimaste: strade provinciali, edilizia scolastica superiore, ambiente.</p>
+    <div class="th dir">La Città Metropolitana</div>
+    <p class="tp">Nelle 14 principali città italiane (Roma, Milano, Napoli...) ha sostituito la Provincia. Il <span class="ev dir">Sindaco metropolitano</span> coincide con il sindaco del capoluogo. Coordina i servizi dell'area urbana allargata: trasporti, pianificazione, sviluppo economico.</p>`,
+    eco:`<div class="th eco">Ricardo e il vantaggio comparato</div>
+    <p class="tp">Ricardo (1817) va oltre Smith: anche se un paese è <strong>meno efficiente in tutto</strong>, conviene specializzarsi in ciò che produce <span class="ev eco">relativamente meglio</span> e commerciare con gli altri. Il commercio internazionale crea vantaggio per tutti i partecipanti — non è a somma zero.</p>
+    <div class="th eco">Malthus e i limiti naturali alla crescita</div>
+    <p class="tp">Thomas Robert <span class="ev eco">Malthus</span> (1766-1834) vede la crescita economica con occhi diversi: la <strong>popolazione</strong> cresce in <span class="ev eco">progressione geometrica</span> (2, 4, 8, 16...) mentre la <strong>produzione di alimenti</strong> cresce in <span class="ev eco">progressione aritmetica</span> (2, 4, 6, 8...). Prima o poi la produzione non basterà — portando a conflitti, carestie, catastrofi.</p>
+    <div class="th eco">Ricardo sui limiti naturali</div>
+    <p class="tp">Anche Ricardo sottoline i <span class="ev eco">limiti naturali</span>: i terreni fertili sono limitati. Man mano che si coltivano terreni sempre meno produttivi, il rendimento decresce. La crescita economica tenderebbe verso uno <strong>stato stazionario</strong> — senza ulteriore espansione.</p>
+    <div class="callout ceco mt8">Malthus e Ricardo anticipano di 150 anni il dibattito sulla sostenibilità ambientale: l'idea che le risorse naturali siano limitate e condizionino la crescita economica è oggi al centro dell'Agenda 2030 e dell'economia circolare.</div>`,
+  },
+  g4:{
+    dir:`<div class="th dir">La Regione</div>
+    <p class="tp">La Regione ha potere legislativo nelle materie di sua competenza. Organi: <span class="ev dir">Consiglio Regionale</span> (legislativo), <span class="ev dir">Giunta Regionale</span> (esecutivo), <span class="ev dir">Presidente</span> eletto direttamente. Competenze: sanità, trasporti regionali, turismo, agricoltura.</p>
+    <div class="th dir">Ordinarie vs speciali</div>
+    <p class="tp">Le <strong>15 Regioni ordinarie</strong> hanno autonomia limitata. Le <span class="ev dir">5 a statuto speciale</span> (Sicilia, Sardegna, Valle d'Aosta, Friuli-VG, Trentino-AA) hanno autonomia legislativa e fiscale molto più ampia, garantita dalla Costituzione per ragioni storiche.</p>`,
+    eco:`<div class="th eco">Keynes e la Grande Depressione</div>
+    <p class="tp">Nel 1929 il mercato mondiale crolla. Disoccupazione di massa, banche che falliscono. Il laissez-faire non basta. Keynes (1936): in una crisi, <span class="ev eco">lo Stato deve intervenire</span> aumentando la spesa pubblica per rimettere in moto la domanda.</p>
+    <div class="th eco">Il moltiplicatore keynesiano</div>
+    <p class="tp">Ogni euro speso dallo Stato non vale solo un euro: chi lo riceve lo rispende in parte, chi lo riceve ancora lo rispende di nuovo. 1€ di spesa pubblica → 2-3€ di attività economica. Questo è il <span class="ev eco">moltiplicatore</span>.</p>`,
+  },
+  g5:{
+    dir:`<div class="th dir">La Provincia Autonoma di Trento</div>
+    <p class="tp">Un ente unico nel panorama italiano. Ha autonomia speciale costituzionalmente garantita. Può legiferare su sanità, istruzione, strade, università, ambiente. Trattiene circa il <span class="ev dir">90% delle tasse</span> locali — circa 6 miliardi di euro per 540.000 abitanti.</p>
+    <div class="th dir">Perché esiste l'autonomia</div>
+    <p class="tp">Ragioni storiche: il Trentino fu parte dell'Impero Austro-Ungarico fino al 1918. La presenza della minoranza linguistica tedesca nell'Alto Adige richiedeva tutele speciali. Lo Statuto del 1972 ne ha formalizzato l'autonomia.</p>`,
+    eco:`<div class="th eco">Milton Friedman e il monetarismo</div>
+    <p class="tp">Friedman (Nobel 1976) critica sistematicamente Keynes: <span class="ev eco">l'inflazione è sempre un fenomeno monetario</span>. Lo Stato non deve intervenire nell'economia: deve solo controllare la quantità di moneta tramite la banca centrale.</p>
+    <div class="th eco">Lo Stato minimo</div>
+    <p class="tp">Il mercato libero trova sempre l'equilibrio ottimale. L'interventismo keynesiano crea solo inflazione, debito e distorsioni. Le sue idee ispirarono Thatcher e Reagan negli anni '80 — è l'era del <span class="ev eco">neoliberismo</span>.</p>`,
+  },
+  g6:{
+    dir:`<div class="th dir">Il federalismo fiscale</div>
+    <p class="tp">Il principio per cui ogni ente locale si finanzia con proprie risorse invece di dipendere dai trasferimenti statali. Chi spende i soldi deve anche raccoglierli: questo crea <span class="ev dir">responsabilità</span> e incentivi a usarli bene.</p>
+    <div class="th dir">Tasse locali in Italia</div>
+    <p class="tp">In Italia il sistema è misto: <span class="ev dir">IMU</span> (imposta sugli immobili) e <span class="ev dir">TARI</span> (tassa sui rifiuti) vanno ai Comuni. Ma la maggior parte delle risorse dipende ancora dai trasferimenti statali. Il Trentino è l'eccezione virtuosa.</p>`,
+    eco:`<div class="th eco">La crisi del 2008</div>
+    <p class="tp">Settembre 2008: fallisce Lehman Brothers. La causa: anni di <span class="ev eco">mutui subprime</span> concessi senza garanzie reali, cartolarizzati e venduti in tutto il mondo. Quando i prezzi delle case crollarono, il sistema si sgretolò. La crisi dimostrò che i mercati finanziari non si autoregolano — Keynes aveva ragione.</p>
+    <div class="th eco">Verso un nuovo modello: l'economia circolare</div>
+    <p class="tp">La crisi del 2008 e la crescente crisi ambientale hanno messo in discussione il modello economico dominante. L'<span class="ev eco">economia lineare</span> funziona così: estrai risorse → produci → consumi → <strong>butti</strong>. L'<span class="ev eco">economia circolare</span> propone un modello alternativo: i rifiuti diventano risorse, i prodotti sono progettati per durare, ripararsi e riciclarsi.</p>
+    <div class="th eco">Economia lineare vs economia circolare</div>
+    <p class="tp"><strong>Lineare:</strong> estrazione → produzione → consumo → smaltimento → spreco. <strong>Circolare:</strong> estrazione → produzione → vendita → consumo → raccolta → riutilizzo/riparazione → riciclo → di nuovo produzione. Obiettivo: una società a <span class="ev eco">bassa emissione di CO₂</span> che non dipenda dall'esaurimento delle risorse naturali.</p>
+    <div class="callout ceco mt8">Il Rapporto Brundtland (1987) aveva già definito lo sviluppo sostenibile: "soddisfa i bisogni del presente senza compromettere la possibilità delle generazioni future di soddisfare i propri." L'economia circolare è il tentativo concreto di realizzarlo.</div>`,
+  },
+};
+
+// ═══════════════════════════
+// GIORNI 1-6
+// ═══════════════════════════
+function bldG1(el){costruisciGiorno(el,0,SPIEG.g1.dir,SPIEG.g1.eco);}
+function bldG2(el){costruisciGiorno(el,1,SPIEG.g2.dir,SPIEG.g2.eco);}
+function bldG3(el){costruisciGiorno(el,2,SPIEG.g3.dir,SPIEG.g3.eco);}
+function bldG4(el){costruisciGiorno(el,3,SPIEG.g4.dir,SPIEG.g4.eco);}
+function bldG5(el){costruisciGiorno(el,4,SPIEG.g5.dir,SPIEG.g5.eco);}
+function bldG6(el){costruisciGiorno(el,5,SPIEG.g6.dir,SPIEG.g6.eco);}
+
+// ═══════════════════════════
+// GIORNO 7 — RIPASSO
+// ═══════════════════════════
+function bldG7(el){
+  const s=sn(6);
+  el.appendChild(bldApertura(6));
+
+  // Ripasso DIR
+  const blkDir=mk('sezione-blk dir');
+  const innerDir=mk('sezione-inner');
+  innerDir.innerHTML=`<div class="sezione-hdr dir"><h2>📋 Ripasso Diritto</h2></div>`;
+  innerDir.appendChild(bldRipasso('dir'));
+  const dirContent=mk('');dirContent.id='sezione-dir-content';
+  dirContent.appendChild(bldFlashcard('dir',6));
+  dirContent.appendChild(bldQuaderno('dir',6));
+  dirContent.appendChild(bldTransizione());
+  innerDir.appendChild(dirContent);
+  blkDir.appendChild(innerDir);
+  el.appendChild(blkDir);
+
+  // Ripasso ECO
+  const blkEco=mk('sezione-blk eco hidden');blkEco.id='sezione-eco';
+  const innerEco=mk('sezione-inner');
+  innerEco.innerHTML=`<div class="sezione-hdr eco"><h2>📊 Ripasso Economia</h2></div>`;
+  innerEco.appendChild(bldRipasso('eco'));
+  const ecoContent=mk('hidden');ecoContent.id='sezione-eco-content';
+  ecoContent.appendChild(bldFlashcard('eco',6));
+  ecoContent.appendChild(bldAutoval());
+  ecoContent.appendChild(bldQuaderno('eco',6));
+  innerEco.appendChild(ecoContent);
+  blkEco.appendChild(innerEco);
+  el.appendChild(blkEco);
+
+  el.appendChild(bldChiusura(6));
+
+  setTimeout(()=>{
+    renderFcMat('dir',6);renderFcMat('eco',6);
+    const data=QUAD.g7;
+    aggiornaQuadUnlock('dir',s,data,data.dir);
+    aggiornaQuadUnlock('eco',s,data,data.eco);
+  },0);
+}
+
+function bldRipasso(mat){
+  const c=mk('card');
+  loadErr();
+  const errori=[...G.errori].sort((a,b)=>b.tentativiErrati-a.tentativiErrati);
+  const tutte=[...Object.values(NODI_DIR).flat(),...Object.values(NODI_ECO).flat(),...Object.values(CLOZE_DIR).flat(),...Object.values(CLOZE_ECO).flat()];
+  const filtro=mat==='dir'
+    ?errori.filter(e=>e.faseId&&(e.faseId.includes('_dir')||e.domandaId.startsWith('g')&&e.domandaId.includes('d')))
+    :errori.filter(e=>e.faseId&&(e.faseId.includes('_eco')||e.domandaId.startsWith('g')&&e.domandaId.includes('e')));
+  const daRip=filtro.slice(0,6).map(e=>{const n=tutte.find(q=>q.id===e.domandaId);return n?{...n,te:e.tentativiErrati}:null;}).filter(Boolean);
+  if(!daRip.length){
+    c.innerHTML=`<div class="card-title"><div class="c-icon">🔁</div>Ripasso ${mat==='dir'?'Diritto':'Economia'}</div>
+      <div class="callout co">🎉 Nessun errore in ${mat==='dir'?'Diritto':'Economia'}! Rivedi le flashcard dall'ultima verso la prima come sfida aggiuntiva.</div>`;
+    // sblocca contenuto
+    setTimeout(()=>{
+      const dc=document.getElementById('sezione-dir-content');if(dc&&mat==='dir')dc.classList.remove('hidden');
+      const ec=document.getElementById('sezione-eco-content');if(ec&&mat==='eco')ec.classList.remove('hidden');
+    },100);
+    return c;
+  }
+  c.innerHTML=`<div class="card-title"><div class="c-icon">🔁</div>Ripasso ${mat==='dir'?'Diritto':'Economia'}</div>
+    <p class="tp mb8">Le domande su cui hai sbagliato di più. Riprova.</p>
+    <div id="rip-lista-${mat}"></div>
+    <div class="tr mt10"><button class="btn ${mat==='dir'?'bdir':'beco'}" onclick="verificaRipasso('${mat}')">Verifica →</button></div>
+    <div id="rip-fb-${mat}" class="mt8"></div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('rip-lista-'+mat);if(!el)return;
+    daRip.forEach(q=>{
+      const opz=q.opz||q.scelte;if(!opz)return;
+      const s=sn(G.fase);const r=s.mappa&&s.mappa['rip_'+q.id]||null;
+      const div=mk('rip-q');div.id='rq-'+q.id;
+      div.innerHTML=`<div style="font-size:.71rem;font-weight:700;margin-bottom:4px;color:var(--gray)">${q.te} errore/i</div>
+        <div class="fl mb8"><strong>${q.pre||q.testo}</strong>${q.post||''}</div>
+        <div class="opz">${opz.map(o=>`<button class="ob${r===o?' sel':''}" onclick="selRipasso('${q.id}','${o.replace(/'/g,"\\'")}','${q.ok.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>
+        <div class="nfb" id="rfb-${q.id}"></div>`;
+      el.appendChild(div);
+    });
+    if(!window._ripasso)window._ripasso={};
+    window._ripasso[mat]=daRip;
+  },0);
+  return c;
+}
+
+function selRipasso(id,op,ok){
+  const s=sn(G.fase);if(!s.mappa)s.mappa={};
+  s.mappa['rip_'+id]=op;sv('mappa',s.mappa);
+  const rq=document.getElementById('rq-'+id);
+  if(rq)rq.querySelectorAll('.ob').forEach(b=>b.className='ob'+(b.textContent===op?' sel':''));
+}
+
+function verificaRipasso(mat){
+  const domande=(window._ripasso&&window._ripasso[mat])||[];
+  const s=sn(G.fase);let ok=0;
+  const fb=document.getElementById('rip-fb-'+mat);
+  domande.forEach(q=>{
+    const r=s.mappa&&s.mappa['rip_'+q.id];
+    const rq=document.getElementById('rq-'+q.id);const rf=document.getElementById('rfb-'+q.id);
+    if(!r){if(rq)rq.className='rip-q nko';if(rf){rf.style.color='var(--err)';rf.textContent='⚠ Scegli.';}return;}
+    const corr=r===q.ok;
+    if(rq)rq.className='rip-q '+(corr?'nok':'nko');
+    if(rq)rq.querySelectorAll('.ob').forEach(b=>{if(b.textContent===q.ok)b.className='ob corr';else if(b.textContent===r&&!corr)b.className='ob sba';});
+    if(rf){rf.style.color=corr?'var(--ok)':'var(--err)';rf.textContent=corr?'✓':'✗ "'+q.ok+'".';}
+    if(corr)ok++;
+  });
+  if(fb){
+    const msg=ok===domande.length?`<div class="callout co">✓ Ripasso ${mat==='dir'?'Diritto':'Economia'} perfetto!</div>`:ok>=domande.length/2?`<div class="callout cw">${ok}/${domande.length}. Quasi!</div>`:`<div class="callout ce">${ok}/${domande.length}. Rivedi la spiegazione.</div>`;
+    fb.innerHTML=msg;
+    // Sblocca flashcard e quaderno
+    const dc=document.getElementById('sezione-dir-content');if(dc&&mat==='dir')dc.classList.remove('hidden');
+    const ec=document.getElementById('sezione-eco-content');if(ec&&mat==='eco')ec.classList.remove('hidden');
+  }
+}
+
+function bldAutoval(){
+  const c=mk('card');
+  const dom=[
+    {id:'av1',mat:'dir',t:'Enti locali — organi e funzioni'},
+    {id:'av2',mat:'dir',t:'Regione ordinaria vs speciale'},
+    {id:'av3',mat:'dir',t:'PA di Trento — autonomia speciale'},
+    {id:'av4',mat:'eco',t:'Mercantilismo e Adam Smith'},
+    {id:'av5',mat:'eco',t:'Ricardo — vantaggio comparato'},
+    {id:'av6',mat:'eco',t:'Keynes — moltiplicatore'},
+    {id:'av7',mat:'eco',t:'Friedman — monetarismo'},
+    {id:'av8',mat:'eco',t:'Crisi del 2008'},
+  ];
+  c.innerHTML=`<div class="card-title"><div class="c-icon">📊</div>Autovalutazione finale</div>
+    <p style="font-size:.86rem;color:var(--slate);margin-bottom:10px;">Valuta onestamente il tuo livello su ogni argomento.</p>
+    ${dom.map(d=>`<div style="margin-bottom:11px;">
+      <div style="font-size:.86rem;font-weight:600;color:var(--navy);margin-bottom:5px;">${d.t}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${['😕 Poco chiaro','😐 Vago','🙂 Sufficiente','😊 Buono','💪 Sicuro'].map((l,i)=>
+          `<button class="ob" id="av-${d.id}-${i}" onclick="selAv('${d.id}',${i})">${l}</button>`).join('')}
+      </div></div>`).join('')}
+    <div id="av-fb"></div>`;
+  return c;
+}
+
+function selAv(did,i){
+  document.querySelectorAll(`[id^="av-${did}-"]`).forEach((b,j)=>b.className='ob'+(j===i?' sel':''));
+  const s=sn(G.fase);if(!s.autoval)s.autoval={};s.autoval[did]=i;sv('autoval',s.autoval);
+  if(Object.keys(s.autoval).length>=8){
+    const fb=document.getElementById('av-fb');
+    if(fb)fb.innerHTML='<div class="callout co mt8">✓ Autovalutazione completata.</div>';
+  }
+}
+</script>
+</body>
+</html>
